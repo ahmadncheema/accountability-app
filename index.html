@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ahmed Al Sheebani RE — Accountability Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════════════ */
+:root {
+  --blue       : #334b91;
+  --blue-dark  : #243570;
+  --blue-light : #eef1fb;
+  --green      : #30ac7d;
+  --green-dark : #228c63;
+  --green-light: #e8f8f2;
+  --white      : #ffffff;
+  --bg         : #f5f7fc;
+  --text       : #1a1f36;
+  --muted      : #6b7494;
+  --border     : #dde2f0;
+  --danger     : #e04040;
+  --gold       : #f0a500;
+  --radius     : 14px;
+  --radius-sm  : 8px;
+  --shadow     : 0 4px 24px rgba(51,75,145,0.10);
+  --shadow-lg  : 0 12px 48px rgba(51,75,145,0.18);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   SCREEN SYSTEM
+═══════════════════════════════════════════════ */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+#loginScreen.active { display: flex; align-items: center; justify-content: center; }
+
+/* ═══════════════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════════════ */
+#loginScreen {
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 50%, #3d5cad 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative circles */
+#loginScreen::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: rgba(48,172,125,0.12);
+  top: -200px; right: -150px;
+  pointer-events: none;
+}
+#loginScreen::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  bottom: -100px; left: -100px;
+  pointer-events: none;
+}
+
+.login-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 48px 44px 44px;
+  box-shadow: var(--shadow-lg);
+  width: 440px;
+  max-width: 95vw;
+  position: relative;
+  z-index: 1;
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── LOGO AREA ──
+   📌 REPLACE LOGO: Change the src of #loginLogo img
+      Place your logo file in the same folder as index.html
+      Then change: src="logo-placeholder.png" to src="your-logo.png"
+*/
+.login-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.login-logo-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 18px;
+  object-fit: contain;
+  background: var(--blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+/* Placeholder logo — remove this SVG block once real logo is added */
+.logo-placeholder-svg {
+  width: 90px; height: 90px;
+  border-radius: 18px;
+  background: var(--blue);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+
+.login-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue);
+  text-align: center;
+  line-height: 1.4;
+}
+.login-brand span { color: var(--green); }
+
+.login-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.login-sub {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.field-wrap { margin-bottom: 16px; }
+.field-wrap label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.field-wrap input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field-wrap input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(51,75,145,0.1);
+  background: var(--white);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.btn-login:hover { background: var(--green); }
+.btn-login:active { transform: scale(0.98); }
+
+.login-err {
+  color: var(--danger);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 12px;
+  min-height: 18px;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════
+   APP SCREEN
+═══════════════════════════════════════════════ */
+#appScreen { background: var(--bg); }
+
+/* ── NAVBAR ──
+   📌 REPLACE NAVBAR LOGO: Change src of #navLogo img
+      Same file as login logo — use the same image
+*/
+.navbar {
+  background: var(--blue);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  box-shadow: 0 2px 16px rgba(51,75,145,0.25);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  flex-shrink: 0;
+}
+
+.nav-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Placeholder nav logo */
+.nav-logo-placeholder {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.nav-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.3;
+}
+.nav-brand span { color: #7de8be; }
+
+.nav-spacer { flex: 1; }
+
+.nav-links { display: flex; gap: 4px; }
+.nav-link {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.18s;
+  font-family: 'Outfit', sans-serif;
+}
+.nav-link:hover { background: rgba(255,255,255,0.12); color: var(--white); }
+.nav-link.active { background: rgba(255,255,255,0.18); color: var(--white); }
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+}
+.nav-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.3);
+  transition: border-color 0.2s;
+}
+.nav-avatar:hover { border-color: var(--white); }
+.nav-username {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+.nav-role-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.role-ceo   { background: var(--gold); color: #fff; }
+.role-admin { background: var(--green); color: #fff; }
+.role-employee { background: rgba(255,255,255,0.2); color: #fff; }
+
+.btn-signout {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.12);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-signout:hover { background: var(--danger); border-color: var(--danger); }
+
+/* ═══════════════════════════════════════════════
+   PANELS
+═══════════════════════════════════════════════ */
+.panel { display: none; flex: 1; overflow-y: auto; }
+.panel.active { display: block; }
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════ */
+#dashPanel {
+  padding: 32px 36px 80px;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dash-welcome {
+  margin-bottom: 28px;
+  animation: fadeIn 0.6s ease;
+}
+.dash-welcome h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--blue);
+  line-height: 1.2;
+}
+.dash-welcome h1 span { color: var(--green); }
+.dash-welcome p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── TOP ROW: Clock + Calendar + Weather ── */
+.dash-top-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+@media(max-width:900px){ .dash-top-row { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px){ .dash-top-row { grid-template-columns: 1fr; } }
+
+.dash-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.5s ease both;
+}
+
+/* Clock */
+.clock-card { text-align: center; }
+.clock-time {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--blue);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.clock-date {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.clock-seconds {
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--green);
+}
+
+/* Calendar */
+.calendar-card {}
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-month-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue);
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  text-align: center;
+}
+.cal-day-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 4px 0;
+}
+.cal-day {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 2px;
+  border-radius: 6px;
+  color: var(--text);
+  cursor: default;
+}
+.cal-day.empty { color: transparent; }
+.cal-day.today {
+  background: var(--blue);
+  color: var(--white);
+  font-weight: 700;
+  border-radius: 50%;
+}
+.cal-day.weekend { color: var(--muted); }
+
+/* Weather */
+.weather-card { text-align: center; }
+.weather-icon { font-size: 52px; line-height: 1; margin-bottom: 8px; }
+.weather-temp {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--blue);
+  line-height: 1;
+}
+.weather-temp sup { font-size: 18px; font-weight: 500; }
+.weather-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+.weather-city {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+}
+.weather-details {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.weather-detail { display: flex; align-items: center; gap: 4px; }
+
+/* ── STATS ROW ── */
+.dash-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media(max-width:700px){ .dash-stats-row { grid-template-columns: 1fr 1fr; } }
+
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.6s ease both;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  border-radius: 4px 0 0 4px;
+}
+.stat-card.completed::before { background: var(--green); }
+.stat-card.incomplete::before { background: var(--danger); }
+.stat-card.inprogress::before { background: var(--gold); }
+.stat-card.total::before { background: var(--blue); }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.stat-card.completed .stat-value { color: var(--green); }
+.stat-card.incomplete .stat-value { color: var(--danger); }
+.stat-card.inprogress .stat-value { color: var(--gold); }
+.stat-card.total .stat-value { color: var(--blue); }
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* ── EMPLOYEE AVATAR CARD ── */
+.dash-bottom-row {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+}
+@media(max-width:800px){ .dash-bottom-row { grid-template-columns: 1fr; } }
+
+.employee-card {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  color: var(--white);
+  animation: fadeIn 0.7s ease both;
+}
+.emp-avatar-big {
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  margin: 0 auto 16px;
+  border: 3px solid rgba(255,255,255,0.3);
+}
+.emp-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.emp-title {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.emp-role-pill {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--green);
+  color: var(--white);
+}
+.emp-divider {
+  margin: 18px 0;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.emp-joined {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+/* Quick info card */
+.quick-info-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.7s ease both;
+}
+.quick-info-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 16px;
+}
+.quick-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.quick-item:last-child { border-bottom: none; }
+.quick-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.qi-blue { background: var(--blue-light); }
+.qi-green { background: var(--green-light); }
+.quick-item-text { flex: 1; }
+.quick-item-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.quick-item-val { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 2px; }
+
+/* ── PENDING TASKS BANNER ── */
+.pending-banner {
+  background: linear-gradient(135deg, #fff4e0, #fff9ef);
+  border: 1.5px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: fadeIn 0.4s ease;
+}
+.pending-banner-icon { font-size: 26px; flex-shrink: 0; }
+.pending-banner-text {}
+.pending-banner-title { font-size: 14px; font-weight: 700; color: #9a6b00; }
+.pending-banner-sub { font-size: 13px; color: #b07d00; margin-top: 2px; }
+.pending-banner-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #b07d00;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+.pending-banner-close:hover { background: rgba(0,0,0,0.06); }
+
+/* ═══════════════════════════════════════════════
+   STICKY NOTES
+═══════════════════════════════════════════════ */
+.sticky-trigger {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.sticky-trigger-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(240,165,0,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.sticky-trigger-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(240,165,0,0.5);
+}
+.sticky-trigger-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.sticky-note {
+  position: fixed;
+  width: 220px;
+  min-height: 160px;
+  border-radius: 4px 4px 4px 16px;
+  padding: 14px 14px 10px;
+  box-shadow: 4px 6px 20px rgba(0,0,0,0.18);
+  z-index: 600;
+  cursor: grab;
+  animation: peelOn 0.35s cubic-bezier(.22,.68,0,1.3) both;
+  display: flex;
+  flex-direction: column;
+}
+.sticky-note:active { cursor: grabbing; }
+
+@keyframes peelOn {
+  from { opacity:0; transform: scale(0.7) rotate(-8deg); }
+  to   { opacity:1; transform: scale(1) rotate(0deg); }
+}
+
+.sticky-colors {
+  --s1: #fff3a3;
+  --s2: #b5ead7;
+  --s3: #ffc8c8;
+  --s4: #c7ceea;
+  --s5: #ffdac1;
+}
+
+.sticky-note.color-0 { background: #fff3a3; }
+.sticky-note.color-1 { background: #b5ead7; }
+.sticky-note.color-2 { background: #ffc8c8; }
+.sticky-note.color-3 { background: #c7ceea; }
+.sticky-note.color-4 { background: #ffdac1; }
+
+.sticky-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.sticky-dots {
+  width: 24px; height: 8px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 4px;
+}
+.sticky-close {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  color: rgba(0,0,0,0.5);
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.sticky-close:hover { background: rgba(200,0,0,0.25); color: #c00; }
+.sticky-textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  color: rgba(0,0,0,0.75);
+  line-height: 1.6;
+  outline: none;
+  min-height: 100px;
+}
+
+/* Recycle bin animation */
+.recycle-bin {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 40px;
+  z-index: 700;
+  display: none;
+  animation: binAppear 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+.recycle-bin.show { display: block; }
+@keyframes binAppear { from{opacity:0;transform:translateX(-50%) scale(0.5);}to{opacity:1;transform:translateX(-50%) scale(1);} }
+
+@keyframes crumble {
+  0%   { transform: scale(1) rotate(0); opacity:1; }
+  40%  { transform: scale(0.6) rotate(20deg); opacity:0.7; }
+  100% { transform: scale(0) rotate(45deg) translateY(60px); opacity:0; }
+}
+.sticky-note.crumbling { animation: crumble 0.45s ease forwards; }
+
+/* ═══════════════════════════════════════════════
+   CHATGPT BUTTON
+═══════════════════════════════════════════════ */
+.chatgpt-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.chatgpt-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #10a37f;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(16,163,127,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.chatgpt-btn:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(16,163,127,0.5); }
+.chatgpt-btn svg { width: 28px; height: 28px; fill: white; }
+
+.chatgpt-bubble {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 14px 14px 4px 14px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  max-width: 240px;
+  text-align: right;
+  box-shadow: var(--shadow);
+  display: none;
+  animation: bubblePop 0.3s cubic-bezier(.22,.68,0,1.3) both;
+  line-height: 1.5;
+}
+.chatgpt-bubble.show { display: block; }
+@keyframes bubblePop {
+  from { opacity:0; transform:scale(0.8) translateY(10px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--blue);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════════
+   PENDING MODAL (popup on login)
+═══════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(13,23,64,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 800;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+.modal-icon { font-size: 48px; text-align: center; margin-bottom: 16px; }
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--blue);
+  text-align: center;
+  margin-bottom: 10px;
+}
+.modal-body {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.modal-tasks-list {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.modal-task-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.modal-task-item:last-child { border-bottom: none; }
+.modal-task-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+.modal-task-dot.danger { background: var(--danger); }
+.btn-modal-close {
+  width: 100%;
+  padding: 12px;
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-modal-close:hover { background: var(--green); }
+
+/* ═══════════════════════════════════════════════
+   PLACEHOLDER PANELS
+═══════════════════════════════════════════════ */
+.placeholder-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: var(--muted);
+}
+.placeholder-panel .ph-icon { font-size: 56px; }
+.placeholder-panel h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--blue);
+}
+.placeholder-panel p { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-card">
+
+    <div class="login-logo-wrap">
+      <!--
+        📌 LOGO REPLACEMENT INSTRUCTIONS:
+        1. Save your company logo image in the same folder as index.html
+        2. Name it "logo.png" (or any name you prefer)
+        3. Remove the <div class="logo-placeholder-svg"> block below
+        4. Uncomment the <img> tag below and change the src to your logo file name
+      -->
+
+      <!-- PLACEHOLDER LOGO (remove this block when real logo is ready) -->
+      <div class="logo-placeholder-svg">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <rect x="6" y="18" width="14" height="32" rx="2" fill="#30ac7d"/>
+          <rect x="22" y="8" width="14" height="42" rx="2" fill="white" opacity="0.9"/>
+          <rect x="36" y="3" width="14" height="47" rx="2" fill="#f0a500"/>
+          <rect x="10" y="36" width="4" height="14" rx="1" fill="rgba(0,0,0,0.2)"/>
+          <rect x="26" y="28" width="4" height="22" rx="1" fill="rgba(51,75,145,0.3)"/>
+        </svg>
+      </div>
+
+      <!-- REAL LOGO (uncomment and update src when ready) -->
+      <!-- <img src="logo.png" alt="Ahmed Al Sheebani Real Estate" class="login-logo-img"/> -->
+
+      <div class="login-brand">
+        Ahmed Al Sheebani<br/><span>Real Estate LLC</span>
+      </div>
+    </div>
+
+    <div class="login-title">Accountability Tracker</div>
+    <div class="login-sub">Sign in to access your monthly sheet</div>
+
+    <div class="field-wrap">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter your username" autocomplete="username"/>
+    </div>
+    <div class="field-wrap">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter your password" autocomplete="current-password"/>
+    </div>
+
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     APP SCREEN
+════════════════════════════════════════ -->
+<div id="appScreen" class="screen">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-logo-wrap">
+      <!--
+        📌 NAVBAR LOGO REPLACEMENT:
+        Same as login logo. Remove the placeholder div and uncomment the img tag.
+        Use the same logo file.
+      -->
+
+      <!-- PLACEHOLDER NAV LOGO -->
+      <div class="nav-logo-placeholder">🏢</div>
+
+      <!-- REAL LOGO (uncomment when ready) -->
+      <!-- <img src="logo.png" alt="Logo" style="height:38px; border-radius:8px;"/> -->
+
+      <div class="nav-brand">
+        Al Sheebani <span>RE</span>
+      </div>
+    </div>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav-links" id="navLinks">
+      <button class="nav-link active" onclick="showPanel('dashPanel', this)">Dashboard</button>
+      <button class="nav-link" onclick="showPanel('sheetPanel', this)">My Sheet</button>
+      <!-- Admin-only link — shown via JS -->
+      <button class="nav-link" id="navAdminBtn" style="display:none" onclick="showPanel('adminPanel', this)">Admin</button>
+      <!-- CEO-only link — shown via JS -->
+      <button class="nav-link" id="navCeoBtn" style="display:none" onclick="showPanel('ceoPanel', this)">CEO View</button>
+    </div>
+
+    <div class="nav-user">
+      <div>
+        <div class="nav-username" id="navName">–</div>
+        <div style="text-align:right; margin-top:2px;">
+          <span class="nav-role-badge" id="navRoleBadge">–</span>
+        </div>
+      </div>
+      <div class="nav-avatar" id="navAvatar" title="Profile">😊</div>
+      <button class="btn-signout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <!-- DASHBOARD PANEL -->
+  <div class="panel active" id="dashPanel" style="padding:32px 36px 100px; max-width:1300px; margin:0 auto; width:100%;">
+
+    <!-- Pending tasks modal trigger banner -->
+    <div class="pending-banner" id="pendingBanner" style="display:none;">
+      <div class="pending-banner-icon">⚠️</div>
+      <div class="pending-banner-text">
+        <div class="pending-banner-title" id="pendingBannerTitle">You have pending tasks from last week</div>
+        <div class="pending-banner-sub" id="pendingBannerSub">Click to review</div>
+      </div>
+      <button class="pending-banner-close" onclick="document.getElementById('pendingBanner').style.display='none'">✕</button>
+    </div>
+
+    <!-- Welcome -->
+    <div class="dash-welcome">
+      <h1>Welcome back, <span id="dashName">–</span> 👋</h1>
+      <p id="dashSub">Ahmed Al Sheebani Real Estate LLC — Accountability Tracker</p>
+    </div>
+
+    <!-- Top Row: Clock | Calendar | Weather -->
+    <div class="dash-top-row">
+      <!-- Clock -->
+      <div class="dash-card clock-card" style="animation-delay:0.1s">
+        <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Live Time</div>
+        <div class="clock-time" id="clockTime">
+          <span id="clockHM">00:00</span><span class="clock-seconds" id="clockS">:00</span>
+        </div>
+        <div class="clock-date" id="clockDate">Loading…</div>
+        <div style="margin-top:14px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+          <div style="background:var(--blue-light); color:var(--blue); padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700;">🕌 Dubai Time</div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="dash-card calendar-card" style="animation-delay:0.2s">
+        <div class="cal-header">
+          <div class="cal-month-name" id="calMonthName">April 2025</div>
+          <div style="font-size:12px; color:var(--muted);" id="calToday">Today</div>
+        </div>
+        <div class="cal-grid" id="calGrid">
+          <!-- Built by JS -->
+        </div>
+      </div>
+
+      <!-- Weather -->
+      <div class="dash-card weather-card" style="animation-delay:0.3s">
+        <div style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Weather</div>
+        <div class="weather-icon" id="weatherIcon">⏳</div>
+        <div class="weather-temp" id="weatherTemp">–<sup>°C</sup></div>
+        <div class="weather-desc" id="weatherDesc">Loading…</div>
+        <div class="weather-city">📍 Dubai, UAE</div>
+        <div class="weather-details">
+          <div class="weather-detail">💧 <span id="weatherHumidity">–</span>%</div>
+          <div class="weather-detail">💨 <span id="weatherWind">–</span> km/h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="dash-stats-row">
+      <div class="stat-card total" style="animation-delay:0.35s">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-sub">This month</div>
+      </div>
+      <div class="stat-card completed" style="animation-delay:0.4s">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="statCompleted">0</div>
+        <div class="stat-sub">Tasks done ✓</div>
+      </div>
+      <div class="stat-card inprogress" style="animation-delay:0.45s">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" id="statInProgress">0</div>
+        <div class="stat-sub">Being worked on</div>
+      </div>
+      <div class="stat-card incomplete" style="animation-delay:0.5s">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="statPending">0</div>
+        <div class="stat-sub">Not started yet</div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Employee Card + Quick Info -->
+    <div class="dash-bottom-row">
+      <div class="employee-card" style="animation-delay:0.55s">
+        <div class="emp-avatar-big" id="empAvatarBig">😊</div>
+        <div class="emp-name" id="empCardName">–</div>
+        <div class="emp-title" id="empCardTitle">–</div>
+        <span class="emp-role-pill" id="empRolePill">–</span>
+        <hr class="emp-divider"/>
+        <div class="emp-joined" id="empCardMonth">–</div>
+      </div>
+
+      <div class="quick-info-card" style="animation-delay:0.6s">
+        <div class="quick-info-title">Quick Overview</div>
+        <div class="quick-item">
+          <div class="quick-icon qi-blue">📅</div>
+          <div class="quick-item-text">
+            <div class="quick-item-label">Current Period</div>
+            <div class="quick-item-val" id="qiPeriod">–</div>
+          </div>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon qi-green">📋</div>
+          <div class="quick-item-text">
+            <div class="quick-item-label">Current Week</div>
+            <div class="quick-item-val" id="qiWeek">–</div>
+          </div>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon qi-blue">🏢</div>
+          <div class="quick-item-text">
+            <div class="quick-item-label">Department</div>
+            <div class="quick-item-val" id="qiDept">–</div>
+          </div>
+        </div>
+        <div class="quick-item">
+          <div class="quick-icon qi-green">📊</div>
+          <div class="quick-item-text">
+            <div class="quick-item-label">Completion Rate</div>
+            <div class="quick-item-val" id="qiRate">–</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHEET PANEL (Phase 2) -->
+  <div class="panel" id="sheetPanel">
+    <div class="placeholder-panel">
+      <div class="ph-icon">📋</div>
+      <h2>Monthly Sheet</h2>
+      <p>Coming in Phase 2 — Tasks, priorities & weekly reports</p>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL (Phase 4) -->
+  <div class="panel" id="adminPanel">
+    <div class="placeholder-panel">
+      <div class="ph-icon">⚙️</div>
+      <h2>Admin Panel</h2>
+      <p>Coming in Phase 4 — User management & exports</p>
+    </div>
+  </div>
+
+  <!-- CEO PANEL (Phase 3) -->
+  <div class="panel" id="ceoPanel">
+    <div class="placeholder-panel">
+      <div class="ph-icon">👑</div>
+      <h2>CEO View</h2>
+      <p>Coming in Phase 3 — View all employees & CEO notes</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- PENDING MODAL -->
+<div class="modal-overlay hidden" id="pendingModal">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">Pending Tasks Alert</div>
+    <div class="modal-body" id="pendingModalBody">You have tasks from last week that are still pending or in progress.</div>
+    <div class="modal-tasks-list" id="pendingModalList"></div>
+    <button class="btn-modal-close" onclick="closePendingModal()">Got it, I'll take care of it!</button>
+  </div>
+</div>
+
+<!-- STICKY TRIGGER -->
+<div class="sticky-trigger" id="stickyTrigger" style="display:none;">
+  <button class="sticky-trigger-btn" onclick="addStickyNote()" title="Add sticky note">📝</button>
+  <div class="sticky-trigger-label">Note</div>
+</div>
+
+<!-- RECYCLE BIN -->
+<div class="recycle-bin" id="recycleBin">🗑️</div>
+
+<!-- CHATGPT FAB -->
+<div class="chatgpt-fab" id="chatgptFab" style="display:none;">
+  <div class="chatgpt-bubble" id="chatgptBubble"></div>
+  <button class="chatgpt-btn" onclick="showChatGPTResponse()" title="ChatGPT">
+    <svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg">
+      <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835 9.964 9.964 0 0 0-6.211-3.427 10.079 10.079 0 0 0-10.4 4.765 9.965 9.965 0 0 0-6.679 4.714 10.08 10.08 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 6.211 3.426 10.079 10.079 0 0 0 10.4-4.765 9.965 9.965 0 0 0 6.679-4.714 10.079 10.079 0 0 0-1.24-11.816zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103l-8.051 4.649a7.504 7.504 0 0 1-10.24-2.744zM4.297 13.62A7.469 7.469 0 0 1 8.2 10.333c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-2.747-10.24zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l8.048 4.648a7.498 7.498 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.647-1.13zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l8.05-4.645a7.497 7.497 0 0 1 11.135 7.763zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.497 7.497 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.497v4.998l-4.331 2.5-4.331-2.5V18z"/>
+    </svg>
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════ -->
+
+<!-- Users & Responses (loaded inline for single-file deployment) -->
+<script>
+// ============================================================
+//  USERS — Edit in users.js when deploying multi-file
+//  📌 When deploying to GitHub/Vercel, replace this block
+//     by adding <script src="users.js"></script> above
+// ============================================================
+const USERS = [
+  { firstName:"Ameera",    lastName:"Al Shaibany",      username:"Ameera",    password:"Ameera@123",    role:"ceo",      title:"CEO",                                              emoji:"👩‍💼" },
+  { firstName:"Jahara",    lastName:"Suarez",            username:"Jahara",    password:"Jahara@123",    role:"admin",    title:"HR & Admin Officer",                               emoji:"👩‍💼" },
+  { firstName:"Muzzammil", lastName:"Attash",            username:"Muzzammil", password:"Muzzammil@123", role:"employee", title:"Real Estate Manager",                              emoji:"👨‍💼" },
+  { firstName:"Khalid",    lastName:"Gattas",            username:"Khalid",    password:"Khalid@123",    role:"employee", title:"Government Relations & Compliance Manager",        emoji:"👨‍💼" },
+  { firstName:"Muhammad",  lastName:"Faisal",            username:"Faisal",    password:"Faisal@123",    role:"employee", title:"Head of Finance & Administration",                 emoji:"👨‍💼" },
+  { firstName:"Syed",      lastName:"Taskeen",           username:"Syed",      password:"Syed@123",      role:"employee", title:"Technical Operations Manager",                     emoji:"👨‍💼" },
+  { firstName:"Sahil",     lastName:"Khan",              username:"Sahil",     password:"Sahil@123",     role:"employee", title:"Real Estate Broker",                               emoji:"👨‍💼" },
+  { firstName:"Lolita",    lastName:"Tambiao",           username:"Lolita",    password:"Lolita@123",    role:"employee", title:"Leasing Consultant",                               emoji:"👩‍💼" },
+  { firstName:"Rafsanjani",lastName:"Ananto",            username:"Rafsan",    password:"Rafsan@123",    role:"employee", title:"Real Estate Operations Assistant",                 emoji:"👨‍💼" },
+  { firstName:"Nipin",     lastName:"Sasidharan",        username:"Nipin",     password:"Nipin@123",     role:"employee", title:"Accountant",                                       emoji:"👨‍💼" },
+  { firstName:"Nabisher",  lastName:"Ali",               username:"Nabisher",  password:"Nabisher@123",  role:"employee", title:"Technical Operations & Procurement Officer",       emoji:"👨‍💼" },
+  { firstName:"Hamza",     lastName:"Akhtar",            username:"Hamza",     password:"Hamza@123",     role:"employee", title:"Real Estate Broker",                               emoji:"👨‍💼" },
+  { firstName:"Sineth",    lastName:"Sooriyabandara",    username:"Sineth",    password:"Sineth@123",    role:"employee", title:"Office Assistant",                                 emoji:"👨‍💼" },
+  { firstName:"Ahmad",     lastName:"Cheema",            username:"Ahmad",     password:"Ahmad@123",     role:"employee", title:"N/A",                                              emoji:"👨‍💼" },
+];
+
+// ============================================================
+//  CHATGPT RESPONSES — Edit in chatgpt-responses.js when deploying
+// ============================================================
+const CHATGPT_RESPONSES = [
+  { user:"Rafsan", message:"Rafsan, don't use ChatGPT — do it yourself! 🙅‍♂️" },
+  { user:"all",    message:"Can't you people do anything by yourselves? 😤" },
+];
+</script>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  APP STATE
+// ════════════════════════════════════════════════════════════
+let currentUser  = null;
+let stickyNotes  = [];   // { id, x, y, text, colorIdx }
+let stickyColorIdx = 0;
+let chatBubbleTimer = null;
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ════════════════════════════════════════════════════════════
+//  DATA LAYER (localStorage — will migrate to Supabase Phase 5)
+// ════════════════════════════════════════════════════════════
+function getData(key){ return JSON.parse(localStorage.getItem(key) || 'null'); }
+function setData(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+function getUserData(username){ return getData(`aasr_data_${username}`) || {}; }
+function setUserData(username, val){ setData(`aasr_data_${username}`, val); }
+
+function getStickyNotes(username){ return getData(`aasr_sticky_${username}`) || []; }
+function setStickyNotes(username, notes){ setData(`aasr_sticky_${username}`, notes); }
+
+// ════════════════════════════════════════════════════════════
+//  LOGIN / LOGOUT
+// ════════════════════════════════════════════════════════════
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const user = USERS.find(x => x.username === u && x.password === p);
+  if(!user){
+    document.getElementById('loginErr').textContent = '❌ Incorrect username or password.';
+    return;
+  }
+  currentUser = user;
+  document.getElementById('loginErr').textContent = '';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  bootApp();
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout(){
+  saveStickyNotes();
+  currentUser = null;
+  stickyNotes = [];
+  // Remove all sticky note elements
+  document.querySelectorAll('.sticky-note').forEach(n => n.remove());
+  switchScreen('loginScreen');
+}
+
+function switchScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════════
+//  BOOT APP AFTER LOGIN
+// ════════════════════════════════════════════════════════════
+function bootApp(){
+  // Set navbar
+  document.getElementById('navName').textContent = currentUser.firstName;
+  document.getElementById('navAvatar').textContent = currentUser.emoji;
+
+  const roleBadge = document.getElementById('navRoleBadge');
+  roleBadge.textContent = currentUser.role.toUpperCase();
+  roleBadge.className = `nav-role-badge role-${currentUser.role}`;
+
+  // Show/hide role-specific nav buttons
+  document.getElementById('navAdminBtn').style.display = (currentUser.role==='admin' || currentUser.role==='ceo') ? '' : 'none';
+  document.getElementById('navCeoBtn').style.display   = currentUser.role==='ceo' ? '' : 'none';
+
+  // Dashboard content
+  buildDashboard();
+
+  // Load sticky notes
+  stickyNotes = getStickyNotes(currentUser.username);
+  stickyNotes.forEach(n => renderStickyNote(n));
+
+  // Show FABs
+  document.getElementById('stickyTrigger').style.display = '';
+  document.getElementById('chatgptFab').style.display    = '';
+
+  // Switch to app screen, show dashboard
+  switchScreen('appScreen');
+  showPanel('dashPanel', document.querySelector('.nav-link'));
+
+  // Check pending tasks
+  checkPendingTasks();
+}
+
+// ════════════════════════════════════════════════════════════
+//  PANEL NAVIGATION
+// ════════════════════════════════════════════════════════════
+function showPanel(id, btn){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════════
+//  DASHBOARD BUILD
+// ════════════════════════════════════════════════════════════
+function buildDashboard(){
+  const now = new Date();
+
+  // Welcome
+  document.getElementById('dashName').textContent = currentUser.firstName;
+  document.getElementById('dashSub').textContent  = `${currentUser.title} — Ahmed Al Sheebani Real Estate LLC`;
+
+  // Employee card
+  document.getElementById('empAvatarBig').textContent  = currentUser.emoji;
+  document.getElementById('empCardName').textContent   = `${currentUser.firstName} ${currentUser.lastName}`;
+  document.getElementById('empCardTitle').textContent  = currentUser.title;
+  document.getElementById('empRolePill').textContent   = currentUser.role.toUpperCase();
+  document.getElementById('empCardMonth').textContent  = `Period: ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+
+  // Quick info
+  document.getElementById('qiPeriod').textContent = `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('qiDept').textContent   = currentUser.title;
+
+  const wn = getCurrentWeekNumber();
+  document.getElementById('qiWeek').textContent  = `Week ${wn} of ${MONTHS[now.getMonth()]}`;
+
+  // Calendar
+  buildCalendar(now);
+
+  // Stats
+  updateStats();
+
+  // Weather
+  fetchWeather();
+
+  // Clock (continuous)
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const now  = new Date();
+  const hm   = now.toLocaleTimeString('en-AE',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Dubai'});
+  const ss   = now.toLocaleTimeString('en-AE',{second:'2-digit',timeZone:'Asia/Dubai'}).slice(-2);
+  const date = now.toLocaleDateString('en-AE',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Dubai'});
+  document.getElementById('clockHM').textContent  = hm;
+  document.getElementById('clockS').textContent   = ':'+ss.padStart(2,'0');
+  document.getElementById('clockDate').textContent = date;
+}
+
+// ── CALENDAR ──
+function buildCalendar(now){
+  const year  = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  document.getElementById('calMonthName').textContent = `${MONTHS[month]} ${year}`;
+  document.getElementById('calToday').textContent     = `Today: ${today} ${MONTHS[month]}`;
+
+  const grid    = document.getElementById('calGrid');
+  const dayNames= ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  let html = dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  // Convert to Mon-first (0=Mon)
+  const startPad = (firstDay === 0) ? 6 : firstDay - 1;
+  for(let i=0;i<startPad;i++) html += `<div class="cal-day empty"></div>`;
+
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  for(let d=1;d<=daysInMonth;d++){
+    const dow = new Date(year,month,d).getDay();
+    const isToday   = d === today;
+    const isWeekend = dow===0||dow===6;
+    html += `<div class="cal-day${isToday?' today':isWeekend?' weekend':''}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// ── WEATHER ──
+const WEATHER_CODES = {
+  0:'☀️',1:'🌤️',2:'⛅',3:'☁️',
+  45:'🌫️',48:'🌫️',
+  51:'🌦️',53:'🌦️',55:'🌧️',
+  61:'🌧️',63:'🌧️',65:'🌧️',
+  71:'🌨️',73:'🌨️',75:'❄️',
+  80:'🌦️',81:'🌧️',82:'⛈️',
+  95:'⛈️',96:'⛈️',99:'⛈️'
+};
+const WEATHER_DESCS = {
+  0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',
+  45:'Foggy',48:'Icy fog',
+  51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',
+  61:'Light rain',63:'Rain',65:'Heavy rain',
+  71:'Light snow',73:'Snow',75:'Heavy snow',
+  80:'Showers',81:'Heavy showers',82:'Violent showers',
+  95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'
+};
+
+async function fetchWeather(){
+  try{
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m,relative_humidity_2m,weathercode,windspeed_10m&timezone=Asia/Dubai');
+    const d = await r.json();
+    const c = d.current;
+    const code = c.weathercode;
+    document.getElementById('weatherIcon').textContent     = WEATHER_CODES[code]||'🌡️';
+    document.getElementById('weatherTemp').innerHTML       = `${Math.round(c.temperature_2m)}<sup>°C</sup>`;
+    document.getElementById('weatherDesc').textContent     = WEATHER_DESCS[code]||'–';
+    document.getElementById('weatherHumidity').textContent = c.relative_humidity_2m;
+    document.getElementById('weatherWind').textContent     = Math.round(c.windspeed_10m);
+  }catch(e){
+    document.getElementById('weatherDesc').textContent = 'Unable to load weather';
+  }
+}
+
+// ── STATS ──
+function updateStats(){
+  const now   = new Date();
+  const key   = `${currentUser.username}_${now.getFullYear()}_${now.getMonth()}`;
+  const data  = getData(`aasr_sheet_${key}`) || {};
+  let total=0, completed=0, inprogress=0, pending=0;
+
+  Object.values(data.weeks||{}).forEach(week=>{
+    Object.values(week.days||{}).forEach(day=>{
+      (day.tasks||[]).forEach(t=>{
+        total++;
+        if(t.status==='completed')   completed++;
+        else if(t.status==='in-progress') inprogress++;
+        else pending++;
+      });
+    });
+  });
+
+  document.getElementById('statTotal').textContent      = total;
+  document.getElementById('statCompleted').textContent  = completed;
+  document.getElementById('statInProgress').textContent = inprogress;
+  document.getElementById('statPending').textContent    = pending;
+  document.getElementById('qiRate').textContent         = total>0 ? `${Math.round(completed/total*100)}% complete` : 'No tasks yet';
+}
+
+// ── WEEK NUMBER ──
+function getCurrentWeekNumber(){
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth();
+  const weeks = getWeeksInMonth(year, month);
+  for(let i=0;i<weeks.length;i++){
+    const w = weeks[i];
+    const wStart = w[0];
+    const wEnd   = w[w.length-1];
+    if(now >= wStart && now <= new Date(wEnd.getTime()+86399999)) return i+1;
+  }
+  return weeks.length;
+}
+
+// Generate Mon-Fri weeks for a month
+function getWeeksInMonth(year, month){
+  const weeks = [];
+  let week    = [];
+  const cur   = new Date(year, month, 1);
+  const last  = new Date(year, month+1, 0);
+
+  // Advance to first Monday of the month
+  while(cur.getDay() !== 1 && cur <= last) cur.setDate(cur.getDate()+1);
+
+  while(cur <= last){
+    const dow = cur.getDay();
+    if(dow >= 1 && dow <= 5){
+      week.push(new Date(cur));
+    }
+    if(dow === 5){
+      weeks.push(week);
+      week = [];
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  if(week.length) weeks.push(week);
+  return weeks;
+}
+
+// ════════════════════════════════════════════════════════════
+//  PENDING TASKS CHECK
+// ════════════════════════════════════════════════════════════
+function checkPendingTasks(){
+  const now     = new Date();
+  const year    = now.getFullYear();
+  const month   = now.getMonth();
+  const curWeek = getCurrentWeekNumber();
+  if(curWeek < 2) return; // No previous week to check
+
+  const key  = `${currentUser.username}_${year}_${month}`;
+  const data = getData(`aasr_sheet_${key}`) || {};
+  const prevWeekData = (data.weeks||{})[curWeek-1] || {};
+
+  const pendingTasks = [];
+  Object.entries(prevWeekData.days||{}).forEach(([day, dayData])=>{
+    (dayData.tasks||[]).forEach(t=>{
+      if(t.status !== 'completed' && t.task){
+        pendingTasks.push({ day, task:t.task, status:t.status });
+      }
+    });
+  });
+
+  if(pendingTasks.length === 0) return;
+
+  // Show modal
+  document.getElementById('pendingModalBody').textContent =
+    `You have ${pendingTasks.length} unfinished task${pendingTasks.length>1?'s':''} from Week ${curWeek-1}. Please review and update them.`;
+
+  const list = document.getElementById('pendingModalList');
+  list.innerHTML = pendingTasks.map(t=>`
+    <div class="modal-task-item">
+      <div class="modal-task-dot ${t.status==='pending'?'danger':''}"></div>
+      <div><strong>${t.day}</strong> — ${t.task} <span style="color:var(--muted);font-size:11px;">(${t.status})</span></div>
+    </div>`).join('');
+
+  document.getElementById('pendingModal').classList.remove('hidden');
+
+  // Also show banner
+  const banner = document.getElementById('pendingBanner');
+  banner.style.display = 'flex';
+  document.getElementById('pendingBannerTitle').textContent =
+    `${pendingTasks.length} pending task${pendingTasks.length>1?'s':''} from Week ${curWeek-1}`;
+  document.getElementById('pendingBannerSub').textContent =
+    `Week ${curWeek-1}: ${pendingTasks.length} task${pendingTasks.length>1?'s':''} remaining`;
+}
+
+function closePendingModal(){
+  document.getElementById('pendingModal').classList.add('hidden');
+}
+
+// ════════════════════════════════════════════════════════════
+//  STICKY NOTES
+// ════════════════════════════════════════════════════════════
+const STICKY_COLORS = ['color-0','color-1','color-2','color-3','color-4'];
+
+function addStickyNote(){
+  const id  = Date.now();
+  const x   = 20 + Math.random()*60;
+  const y   = 100 + Math.random()*200;
+  const col = stickyColorIdx % STICKY_COLORS.length;
+  stickyColorIdx++;
+
+  const note = { id, x, y, text:'', colorIdx: col };
+  stickyNotes.push(note);
+  renderStickyNote(note);
+  saveStickyNotes();
+}
+
+function renderStickyNote(note){
+  const el = document.createElement('div');
+  el.className = `sticky-note ${STICKY_COLORS[note.colorIdx]}`;
+  el.id = `sticky_${note.id}`;
+  el.style.left = note.x + 'px';
+  el.style.top  = note.y + 'px';
+
+  el.innerHTML = `
+    <div class="sticky-top">
+      <div class="sticky-dots"></div>
+      <button class="sticky-close" onclick="deleteStickyNote(${note.id})">✕</button>
+    </div>
+    <textarea class="sticky-textarea" placeholder="Write your note…">${esc(note.text)}</textarea>`;
+
+  el.querySelector('textarea').addEventListener('input', e=>{
+    const n = stickyNotes.find(x=>x.id===note.id);
+    if(n){ n.text = e.target.value; saveStickyNotes(); }
+  });
+
+  makeDraggable(el, note);
+  document.body.appendChild(el);
+}
+
+function deleteStickyNote(id){
+  const el = document.getElementById(`sticky_${id}`);
+  if(!el) return;
+
+  // Show recycle bin
+  const bin = document.getElementById('recycleBin');
+  bin.classList.add('show');
+
+  // Crumble animation
+  el.classList.add('crumbling');
+  setTimeout(()=>{
+    el.remove();
+    bin.classList.remove('show');
+  }, 500);
+
+  stickyNotes = stickyNotes.filter(n=>n.id!==id);
+  saveStickyNotes();
+}
+
+function saveStickyNotes(){
+  if(currentUser) setStickyNotes(currentUser.username, stickyNotes);
+}
+
+function makeDraggable(el, note){
+  let ox=0, oy=0, mx=0, my=0;
+  el.addEventListener('mousedown', e=>{
+    if(e.target.tagName==='TEXTAREA'||e.target.tagName==='BUTTON') return;
+    e.preventDefault();
+    mx = e.clientX; my = e.clientY;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+    el.style.cursor = 'grabbing';
+  });
+  function onMove(e){
+    ox = mx - e.clientX; oy = my - e.clientY;
+    mx = e.clientX;      my = e.clientY;
+    const newX = Math.max(0, el.offsetLeft - ox);
+    const newY = Math.max(60, el.offsetTop  - oy);
+    el.style.left = newX + 'px';
+    el.style.top  = newY + 'px';
+    note.x = newX; note.y = newY;
+  }
+  function onUp(){
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup',   onUp);
+    el.style.cursor = 'grab';
+    saveStickyNotes();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  CHATGPT BUTTON
+// ════════════════════════════════════════════════════════════
+function showChatGPTResponse(){
+  const bubble = document.getElementById('chatgptBubble');
+  if(bubble.classList.contains('show')){
+    bubble.classList.remove('show');
+    return;
+  }
+
+  // Find targeted response first, else random "all"
+  const targeted = CHATGPT_RESPONSES.filter(r => r.user === currentUser.username);
+  const general  = CHATGPT_RESPONSES.filter(r => r.user === 'all');
+  const pool     = targeted.length ? targeted : general;
+  const msg      = pool[Math.floor(Math.random()*pool.length)];
+
+  bubble.textContent = msg ? msg.message : "No response configured!";
+  bubble.classList.add('show');
+
+  if(chatBubbleTimer) clearTimeout(chatBubbleTimer);
+  chatBubbleTimer = setTimeout(()=> bubble.classList.remove('show'), 4000);
+}
+
+// ════════════════════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════════════════════
+function esc(s){ return String(s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
