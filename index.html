@@ -228,7 +228,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 /* SHEET */
 .sheet-header{background:var(--white);border-radius:var(--radius);padding:18px 22px;box-shadow:var(--shadow);margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
 .sheet-header-title{font-size:18px;font-weight:700;color:var(--blue);}
-.sheet-month-badge{background:var(--blue-light);color:var(--blue);padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;}
+.sheet-sel{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg);cursor:pointer;}
+.sheet-sel:focus{outline:none;border-color:var(--blue);}
+.btn-load-sheet{padding:8px 18px;border-radius:8px;background:var(--blue);color:#fff;border:none;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:background .2s;}
+.btn-load-sheet:hover{background:var(--green);}
 .sheet-spacer{flex:1;}
 .btn-export{padding:9px 18px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .18s;}
 .btn-excel{background:#1a6b3c;color:#fff;}
@@ -269,12 +272,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .day-add-btn:hover{background:var(--green);color:#fff;}
 .task-col-hdr{display:grid;grid-template-columns:1fr 130px 80px 80px 1fr 1fr 36px;gap:8px;padding:8px 20px;background:#e8ecf8;border-bottom:2px solid var(--border);}
 .task-col-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-.task-row{display:grid;grid-template-columns:1fr 130px 80px 80px 1fr 1fr 36px;gap:8px;padding:10px 20px;border-bottom:1px solid #f0f2f8;align-items:center;}
+.task-row{display:grid;grid-template-columns:1.8fr 130px 70px 70px 1fr 1fr 36px;gap:8px;padding:10px 20px;border-bottom:1px solid #f0f2f8;align-items:start;}
 .task-row:last-child{border-bottom:none;}
 .task-row:hover{background:#fafbff;}
-.task-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);}
+.task-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);resize:none;overflow:hidden;min-height:34px;line-height:1.5;}
 .task-input:focus{outline:none;border-color:var(--blue);background:var(--white);}
-.task-input[readonly]{background:#f5f7fc;color:var(--muted);cursor:default;}
+.task-input[readonly]{background:#f5f7fc;color:var(--text);cursor:default;}
 .status-sel{width:100%;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;background:var(--bg);}
 .status-sel:focus{outline:none;}
 .status-sel.pending{color:var(--danger);border-color:var(--danger);background:#fef5f5;}
@@ -596,7 +599,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="panel-inner">
       <div class="sheet-header">
         <div><div class="sheet-header-title">Monthly Accountability Sheet</div><div style="font-size:13px;color:var(--muted);margin-top:2px;" id="sheetSub">-</div></div>
-        <div class="sheet-month-badge" id="sheetBadge">-</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <select id="selMonth" class="sheet-sel">
+            <option value="0">January</option><option value="1">February</option>
+            <option value="2">March</option><option value="3">April</option>
+            <option value="4">May</option><option value="5">June</option>
+            <option value="6">July</option><option value="7">August</option>
+            <option value="8">September</option><option value="9">October</option>
+            <option value="10">November</option><option value="11">December</option>
+          </select>
+          <select id="selYear" class="sheet-sel" style="width:90px;"></select>
+          <button class="btn-load-sheet" onclick="loadSheetForSelected()">Load</button>
+        </div>
         <div class="sheet-spacer"></div>
         <button class="btn-export btn-excel" onclick="exportExcel()">Excel</button>
         <button class="btn-export btn-pdf" onclick="exportPDF()">PDF</button>
@@ -709,7 +723,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       The CSS filter converts black to brown/gold color.
       If you have not uploaded it yet, a fallback D symbol shows.
     -->
-    <img src="images/dirham.png" alt="AED"
+    <img src="images/dirham.svg" alt="AED"
       style="width:30px;height:26px;object-fit:contain;filter:invert(32%) sepia(72%) saturate(600%) hue-rotate(20deg) brightness(0.7);"
       onerror="this.style.display='none';document.getElementById('dirhamFallback').style.display='flex'"/>
     <span id="dirhamFallback" style="display:none;font-size:20px;font-weight:900;color:#7a5200;font-family:Georgia,serif;">D</span>
@@ -718,7 +732,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 <!-- MAFI MODAL -->
 <div class="mafi-overlay hidden" id="mafiModal">
-  <div class="mafi-box"><div class="mafi-emoji">&#128557;</div><div class="mafi-en">Mafi Fulus!</div><div class="mafi-ar">&#x645;&#x627;&#x641;&#x64a; &#x641;&#x644;&#x648;&#x633;</div></div>
+  <div class="mafi-box">
+    <div class="mafi-emoji">&#128557;</div>
+    <div class="mafi-en">Mafi Fulus, Go Make Fulus!</div>
+    <div class="mafi-ar">&#x645;&#x627;&#x641;&#x64a; &#x641;&#x644;&#x648;&#x633;&#x60C; &#x627;&#x630;&#x647;&#x628; &#x648;&#x627;&#x643;&#x633;&#x628; &#x641;&#x644;&#x648;&#x633;</div>
+  </div>
 </div>
 
 <!-- MOBILE NOTES -->
@@ -775,7 +793,31 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 var SUPA_URL='https://sbiquslgcarpsyxmkadq.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiaXF1c2xnY2FycHN5eG1rYWRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NTY3MTYsImV4cCI6MjA5MzAzMjcxNn0.1tLy-qi6zXKoGlmR9xw6wuaSGsKvvEzstgNkW7cSVE4';
 var sb=supabase.createClient(SUPA_URL,SUPA_KEY);
-var CGPT=[{user:'Rafsan',message:"Rafsan, don't use ChatGPT - do it yourself!"},{user:'all',message:"Can't you people do anything by yourselves?"}];
+var CGPT=[
+  {user:'Rafsan',    message:"Rafsan, don't use ChatGPT - do it yourself!"},
+  {user:'Rafsan',    message:"Rafsan... seriously? Put it down."},
+  {user:'Rafsan',    message:"Rafsan, even ChatGPT is tired of your questions!"},
+  {user:'Khalid',    message:"Khalid, Google exists for a reason!"},
+  {user:'Muzzammil', message:"Muzzammil, AI won't close your deals for you!"},
+  {user:'Faisal',    message:"Faisal, the numbers won't calculate themselves... actually don't ask AI either!"},
+  {user:'Syed',      message:"Syed, ChatGPT can't fix the AC. Get back to work!"},
+  {user:'Sahil',     message:"Sahil, your clients need YOU, not ChatGPT!"},
+  {user:'Lolita',    message:"Lolita, no AI is leasing that apartment for you!"},
+  {user:'Nipin',     message:"Nipin, even accountants have to think for themselves!"},
+  {user:'Nabisher',  message:"Nabisher, procurement needs your brain, not a bot!"},
+  {user:'Hamza',     message:"Hamza, ChatGPT doesn't know your clients like you do!"},
+  {user:'Sineth',    message:"Sineth, the office won't clean itself either!"},
+  {user:'Ahmad',     message:"Ahmad, still figuring out your job title and using ChatGPT?"},
+  {user:'Jahara',    message:"Jahara, HR problems need a human touch, not AI!"},
+  {user:'Ameera',    message:"Even the CEO? Really, Ameera?"},
+  {user:'all',       message:"Can't you people do anything by yourselves?"},
+  {user:'all',       message:"Back to work, this isn't a chatbot!"},
+  {user:'all',       message:"Your salary doesn't include AI assistance!"},
+  {user:'all',       message:"Close this and open your task sheet instead!"},
+  {user:'all',       message:"The only AI allowed here is Ahmed's Intelligence!"},
+  {user:'all',       message:"ChatGPT is not in your job description!"},
+  {user:'all',       message:"If ChatGPT did your job, who would need you?"}
+];
 var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 var DN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 var QUOTES=[
@@ -802,17 +844,23 @@ var QUOTES=[
 var CU=null,sheetData={},stickyNotes=[],sCI=0;
 var saveTimer=null,clockInterval=null,chatTimer=null;
 var fwInterval=null,gameRunning=false,gameScore=0,gameBest=0,gameTimeLeft=30,gameTimer=null;
-var salaryClicks=0,salaryMoving=false;
 var lbMode='week';
 var isMob=function(){return window.innerWidth<=700;};
 
 function showLoad(m){document.getElementById('loadingOv').classList.remove('hidden');document.getElementById('loadingTxt').textContent=m||'Loading...';}
 function hideLoad(){document.getElementById('loadingOv').classList.add('hidden');}
-function saveSession(u){sessionStorage.setItem('aasr_sess',u.username);}
-function clearSession(){sessionStorage.removeItem('aasr_sess');}
+// TAB-SPECIFIC SESSION
+// Each tab gets a unique ID so multiple tabs can have different users
+var TAB_ID=(function(){
+  var id=sessionStorage.getItem('aasr_tab_id');
+  if(!id){id='tab_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);sessionStorage.setItem('aasr_tab_id',id);}
+  return id;
+})();
+function saveSession(u){sessionStorage.setItem('aasr_sess_'+TAB_ID,u.username);}
+function clearSession(){sessionStorage.removeItem('aasr_sess_'+TAB_ID);}
 
 window.addEventListener('load',async function(){
-  var s=sessionStorage.getItem('aasr_sess');
+  var s=sessionStorage.getItem('aasr_sess_'+TAB_ID);
   if(s){showLoad('Restoring session...');var r=await sb.from('users').select('*').eq('username',s).single();if(r.data){CU=r.data;await bootApp();}else{hideLoad();}}
   else{hideLoad();}
 });
@@ -874,6 +922,7 @@ async function bootApp(){
   switchScreen('appScreen');
   showPanel('dashPanel',document.querySelector('.nav-link'));
   buildDashboard();
+  initSheetSelectors();
   await loadSheet();
   checkPendingTasks();
   initGameGrid();
@@ -1030,14 +1079,43 @@ function fmtD(d){return DN[d.getDay()]+', '+d.getDate()+' '+MN[d.getMonth()];}
 function dKey(d){return d.getFullYear()+'_'+(d.getMonth()+1)+'_'+d.getDate();}
 
 // SHEET
+function initSheetSelectors(){
+  var now=new Date();
+  var yearSel=document.getElementById('selYear');
+  var monthSel=document.getElementById('selMonth');
+  yearSel.innerHTML='';
+  // Show from 2025 to current year + 1
+  for(var y=2025;y<=now.getFullYear()+1;y++){
+    var o=document.createElement('option');
+    o.value=y;o.textContent=y;
+    yearSel.appendChild(o);
+  }
+  yearSel.value=now.getFullYear();
+  monthSel.value=now.getMonth();
+}
+
 async function loadSheet(){
-  var now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
-  document.getElementById('sheetBadge').textContent=MN[mo]+' '+yr;
-  document.getElementById('sheetSub').textContent=CU.first_name+' '+CU.last_name+' - '+CU.title;
+  var now=new Date();
+  var mo=now.getMonth();
+  var yr=now.getFullYear();
+  // Set selectors to current month/year
+  if(document.getElementById('selMonth'))document.getElementById('selMonth').value=mo;
+  if(document.getElementById('selYear'))document.getElementById('selYear').value=yr;
+  await loadSheetForYearMonth(yr,mo);
+}
+
+async function loadSheetForSelected(){
+  var mo=parseInt(document.getElementById('selMonth').value);
+  var yr=parseInt(document.getElementById('selYear').value);
+  await loadSheetForYearMonth(yr,mo);
+}
+
+async function loadSheetForYearMonth(yr,mo){
+  document.getElementById('sheetSub').textContent=CU.first_name+' '+CU.last_name+' - '+CU.title+' | '+MN[mo]+' '+yr;
   var res=await sb.from('sheets').select('data').eq('username',CU.username).eq('year',yr).eq('month',mo).single();
   sheetData=(res.data&&res.data.data)?res.data.data:{weeks:{}};
   if(!sheetData.weeks)sheetData.weeks={};
-  // Always fetch CEO notes from ceo_notes table and merge into sheetData
+  // Fetch CEO notes for this month
   var cnRes=await sb.from('ceo_notes').select('week,note').eq('target_username',CU.username).eq('year',yr).eq('month',mo);
   if(cnRes.data&&cnRes.data.length){
     cnRes.data.forEach(function(n){
@@ -1047,6 +1125,15 @@ async function loadSheet(){
     });
   }
   renderSheet(yr,mo);
+  updateStats();
+}
+
+// Override saveSheet to use selected month/year
+async function saveSheet(){
+  var mo=parseInt(document.getElementById('selMonth').value);
+  var yr=parseInt(document.getElementById('selYear').value);
+  await sb.from('sheets').upsert({username:CU.username,year:yr,month:mo,data:sheetData,updated_at:new Date().toISOString()},{onConflict:'username,year,month'});
+  var si=document.getElementById('saveInd');si.classList.add('show');setTimeout(function(){si.classList.remove('show');},1800);
   updateStats();
 }
 
@@ -1062,7 +1149,13 @@ function scheduleSave(){if(saveTimer)clearTimeout(saveTimer);saveTimer=setTimeou
 function renderSheet(yr,mo){
   var container=document.getElementById('weeksContainer');container.innerHTML='';
   var allWeeks=getWeeksInMonth(yr,mo);
-  var visible=getVisibleWeeks(yr,mo);
+  var now=new Date();
+  var isPastMonth=(yr<now.getFullYear())||(yr===now.getFullYear()&&mo<now.getMonth());
+  var visible=isPastMonth?allWeeks.map(function(w,i){return{week:w,wkNum:i+1};}):getVisibleWeeks(yr,mo);
+  if(!visible.length){
+    container.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted);font-size:14px;">No weeks available yet for this month.</div>';
+    return;
+  }
   visible.forEach(function(vw){
     var wkNum=vw.wkNum,week=vw.week;
     if(!sheetData.weeks[wkNum])sheetData.weeks[wkNum]={priorities:['','',''],days:{},comment:'',ceoNote:'',weekend:false};
@@ -1152,7 +1245,7 @@ function renderTasks(wkNum,dk){
   tasks.forEach(function(t,ti){
     var row=document.createElement('div');row.className='task-row';
     row.innerHTML=
-      '<input class="task-input" placeholder="Task description..." value="'+escA(t.task)+'" oninput="setTask('+wkNum+',\''+dk+'\','+ti+',\'task\',this.value)"/>'+
+      '<textarea class="task-input" placeholder="Task description..." rows="1" oninput="autoExpand(this);setTask('+wkNum+',\''+dk+'\','+ti+',\'task\',this.value)">'+escH(t.task)+'</textarea>'+
       '<select class="status-sel '+t.status+'" onchange="setTask('+wkNum+',\''+dk+'\','+ti+',\'status\',this.value);this.className=\'status-sel \'+this.value">'+
         '<option value="pending" '+(t.status==='pending'?'selected':'')+'>Pending</option>'+
         '<option value="in-progress" '+(t.status==='in-progress'?'selected':'')+'>In Progress</option>'+
@@ -1160,11 +1253,18 @@ function renderTasks(wkNum,dk){
       '</select>'+
       '<input class="task-num" placeholder="Target" value="'+escA(t.target)+'" oninput="setTask('+wkNum+',\''+dk+'\','+ti+',\'target\',this.value)"/>'+
       '<input class="task-num" placeholder="Actual" value="'+escA(t.actual)+'" oninput="setTask('+wkNum+',\''+dk+'\','+ti+',\'actual\',this.value)"/>'+
-      '<input class="task-input" placeholder="Challenges..." value="'+escA(t.challenge)+'" oninput="setTask('+wkNum+',\''+dk+'\','+ti+',\'challenge\',this.value)"/>'+
-      '<input class="task-input" placeholder="Notes..." value="'+escA(t.notes)+'" oninput="setTask('+wkNum+',\''+dk+'\','+ti+',\'notes\',this.value)"/>'+
+      '<textarea class="task-input" placeholder="Challenges..." rows="1" oninput="autoExpand(this);setTask('+wkNum+',\''+dk+'\','+ti+',\'challenge\',this.value)">'+escH(t.challenge)+'</textarea>'+
+      '<textarea class="task-input" placeholder="Notes..." rows="1" oninput="autoExpand(this);setTask('+wkNum+',\''+dk+'\','+ti+',\'notes\',this.value)">'+escH(t.notes)+'</textarea>'+
       '<button class="btn-icon btn-rem-icon" onclick="remTask('+wkNum+',\''+dk+'\','+ti+')">&#8722;</button>';
     container.appendChild(row);
+    // Auto-expand all textareas after render
+    row.querySelectorAll('.task-input').forEach(function(ta){autoExpand(ta);});
   });
+}
+
+function autoExpand(el){
+  el.style.height='auto';
+  el.style.height=(el.scrollHeight)+'px';
 }
 
 function emptyTask(){return{task:'',status:'pending',target:'',actual:'',challenge:'',notes:''};}
@@ -1326,7 +1426,7 @@ async function loadCeoView(){
 
 function buildTaskRowHTML(t){
   return '<div class="task-row">'+
-    '<input class="task-input" value="'+escA(t.task)+'" readonly/>'+
+    '<textarea class="task-input" readonly rows="1" style="resize:none;">'+escH(t.task)+'</textarea>'+
     '<select class="status-sel '+t.status+'" disabled>'+
       '<option value="pending" '+(t.status==='pending'?'selected':'')+'>Pending</option>'+
       '<option value="in-progress" '+(t.status==='in-progress'?'selected':'')+'>In Progress</option>'+
@@ -1334,8 +1434,8 @@ function buildTaskRowHTML(t){
     '</select>'+
     '<input class="task-num" value="'+escA(t.target)+'" readonly/>'+
     '<input class="task-num" value="'+escA(t.actual)+'" readonly/>'+
-    '<input class="task-input" value="'+escA(t.challenge)+'" readonly/>'+
-    '<input class="task-input" value="'+escA(t.notes)+'" readonly/>'+
+    '<textarea class="task-input" readonly rows="1" style="resize:none;">'+escH(t.challenge)+'</textarea>'+
+    '<textarea class="task-input" readonly rows="1" style="resize:none;">'+escH(t.notes)+'</textarea>'+
     '<div></div></div>';
 }
 
@@ -1503,9 +1603,117 @@ async function adminExportExcel(){
   showToast('Excel exported!');
 }
 
-async function adminExportPDF(){showToast('PDF export available - Excel is recommended for multi-employee reports.');}
-function exportExcel(){showToast('Use Admin panel to export. Coming for individual use in Phase 5.');}
-function exportPDF(){showToast('PDF export coming in Phase 5.');}
+async function exportExcel(){
+  var mo=parseInt(document.getElementById('selMonth').value);
+  var yr=parseInt(document.getElementById('selYear').value);
+  showLoad('Preparing Excel...');
+  var rows=[];
+  rows.push(['Employee Accountability Sheet - '+MN[mo]+' '+yr]);
+  rows.push(['Name:',CU.first_name+' '+CU.last_name,'','Position:',CU.title]);
+  rows.push([]);
+  rows.push(['Week','Day','Task Description','Status','Target','Actual','Challenges','Notes','CEO Notes']);
+  Object.keys(sheetData.weeks||{}).sort().forEach(function(wk){
+    var wd=sheetData.weeks[wk]||{};
+    // Priorities
+    if(wd.priorities&&wd.priorities.some(function(p){return p;})){
+      rows.push(['Week '+wk+' Priorities:']);
+      wd.priorities.forEach(function(p,i){if(p)rows.push(['','P'+(i+1),p]);});
+      rows.push([]);
+    }
+    Object.keys(wd.days||{}).forEach(function(dk){
+      (wd.days[dk]||[]).forEach(function(t){
+        if(!t.task||!t.task.trim())return;
+        rows.push(['Week '+wk,dk,t.task,t.status,t.target||'',t.actual||'',t.challenge||'',t.notes||'',wd.ceoNote||'']);
+      });
+    });
+    if(wd.comment)rows.push(['Week '+wk+' Comment:','',wd.comment]);
+    rows.push([]);
+  });
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:10},{wch:16},{wch:36},{wch:12},{wch:8},{wch:8},{wch:24},{wch:24},{wch:24}];
+  XLSX.utils.book_append_sheet(wb,ws,MN[mo]+' '+yr);
+  XLSX.writeFile(wb,'Accountability_'+CU.first_name+'_'+MN[mo]+'_'+yr+'.xlsx');
+  hideLoad();
+  showToast('Excel exported!');
+}
+
+async function exportPDF(){
+  var mo=parseInt(document.getElementById('selMonth').value);
+  var yr=parseInt(document.getElementById('selYear').value);
+  showLoad('Preparing PDF...');
+  // Build printable HTML and trigger browser print
+  var printWin=window.open('','_blank');
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>'+CU.first_name+' - '+MN[mo]+' '+yr+'</title>';
+  html+='<style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;}h1{font-size:16px;color:#334b91;}h2{font-size:13px;color:#334b91;margin-top:16px;}table{width:100%;border-collapse:collapse;margin-bottom:16px;}th{background:#334b91;color:#fff;padding:6px 8px;text-align:left;font-size:11px;}td{padding:5px 8px;border:1px solid #dde2f0;font-size:11px;vertical-align:top;}.wk-hdr{background:#eef1fb;font-weight:bold;padding:8px;margin:12px 0 4px;}@media print{.no-print{display:none;}}</style></head><body>';
+  html+='<div class="no-print" style="margin-bottom:16px;"><button onclick="window.print()" style="padding:8px 20px;background:#334b91;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Print / Save as PDF</button></div>';
+  html+='<h1>Employee Accountability Sheet</h1>';
+  html+='<p><strong>Name:</strong> '+CU.first_name+' '+CU.last_name+' &nbsp;&nbsp; <strong>Position:</strong> '+CU.title+' &nbsp;&nbsp; <strong>Period:</strong> '+MN[mo]+' '+yr+'</p>';
+  Object.keys(sheetData.weeks||{}).sort().forEach(function(wk){
+    var wd=sheetData.weeks[wk]||{};
+    html+='<div class="wk-hdr">Week '+wk+'</div>';
+    if(wd.priorities&&wd.priorities.some(function(p){return p;})){
+      html+='<p><strong>Priorities:</strong> ';
+      wd.priorities.filter(function(p){return p;}).forEach(function(p,i){html+=(i+1)+'. '+p+' &nbsp; ';});
+      html+='</p>';
+    }
+    html+='<table><tr><th>Day</th><th>Task</th><th>Status</th><th>Target</th><th>Actual</th><th>Challenges</th><th>Notes</th></tr>';
+    Object.keys(wd.days||{}).forEach(function(dk){
+      (wd.days[dk]||[]).forEach(function(t){
+        if(!t.task||!t.task.trim())return;
+        html+='<tr><td>'+dk+'</td><td>'+t.task+'</td><td>'+t.status+'</td><td>'+( t.target||'')+'</td><td>'+(t.actual||'')+'</td><td>'+(t.challenge||'')+'</td><td>'+(t.notes||'')+'</td></tr>';
+      });
+    });
+    html+='</table>';
+    if(wd.comment)html+='<p><strong>Comments:</strong> '+wd.comment+'</p>';
+    if(wd.ceoNote)html+='<p><strong>CEO Notes:</strong> '+wd.ceoNote+'</p>';
+  });
+  html+='</body></html>';
+  printWin.document.write(html);
+  printWin.document.close();
+  hideLoad();
+}
+
+async function adminExportPDF(){
+  var empSel=document.getElementById('exportEmpSel').value;
+  var mo=parseInt(document.getElementById('selMonth')?document.getElementById('selMonth').value:new Date().getMonth());
+  var yr=new Date().getFullYear();
+  showLoad('Preparing PDF...');
+  var query=sb.from('sheets').select('username,data').eq('year',yr).eq('month',mo);
+  if(empSel!=='all')query=query.eq('username',empSel);
+  var sRes=await query;
+  var uRes=await sb.from('users').select('username,first_name,last_name,title');
+  hideLoad();
+  if(!sRes.data||!sRes.data.length){showToast('No data to export.');return;}
+  var nameMap={};
+  if(uRes.data)uRes.data.forEach(function(u){nameMap[u.username]={name:u.first_name+' '+u.last_name,title:u.title};});
+  var printWin=window.open('','_blank');
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Accountability Report - '+MN[mo]+' '+yr+'</title>';
+  html+='<style>body{font-family:Arial,sans-serif;font-size:11px;margin:20px;}h1{font-size:15px;color:#334b91;}h2{font-size:13px;color:#334b91;border-bottom:2px solid #334b91;padding-bottom:4px;margin-top:24px;}table{width:100%;border-collapse:collapse;margin-bottom:12px;}th{background:#334b91;color:#fff;padding:5px 7px;text-align:left;font-size:10px;}td{padding:4px 7px;border:1px solid #dde2f0;font-size:10px;vertical-align:top;}.wk-hdr{background:#eef1fb;font-weight:bold;padding:6px;margin:10px 0 3px;}.page-break{page-break-after:always;}@media print{.no-print{display:none;}}</style></head><body>';
+  html+='<div class="no-print" style="margin-bottom:16px;"><button onclick="window.print()" style="padding:8px 20px;background:#334b91;color:#fff;border:none;border-radius:6px;cursor:pointer;">Print / Save as PDF</button></div>';
+  html+='<h1>Accountability Report - '+MN[mo]+' '+yr+'</h1>';
+  sRes.data.forEach(function(row,ri){
+    var info=nameMap[row.username]||{name:row.username,title:''};
+    var d=row.data||{};
+    html+='<h2>'+info.name+' - '+info.title+'</h2>';
+    Object.keys(d.weeks||{}).sort().forEach(function(wk){
+      var wd=d.weeks[wk]||{};
+      html+='<div class="wk-hdr">Week '+wk+'</div>';
+      html+='<table><tr><th>Day</th><th>Task</th><th>Status</th><th>Target</th><th>Actual</th><th>Challenges</th><th>Notes</th></tr>';
+      Object.keys(wd.days||{}).forEach(function(dk){
+        (wd.days[dk]||[]).forEach(function(t){
+          if(!t.task||!t.task.trim())return;
+          html+='<tr><td>'+dk+'</td><td>'+t.task+'</td><td>'+t.status+'</td><td>'+(t.target||'')+'</td><td>'+(t.actual||'')+'</td><td>'+(t.challenge||'')+'</td><td>'+(t.notes||'')+'</td></tr>';
+        });
+      });
+      html+='</table>';
+    });
+    if(ri<sRes.data.length-1)html+='<div class="page-break"></div>';
+  });
+  html+='</body></html>';
+  printWin.document.write(html);
+  printWin.document.close();
+}
 
 // LEADERBOARD
 async function loadLeaderboard(){
@@ -1610,30 +1818,31 @@ function stopGear(card){var ov=card.querySelector('.gear-overlay');if(ov)ov.styl
 function startSiren(card){var ov=card.querySelector('.siren-overlay');if(ov)ov.style.opacity='1';}
 function stopSiren(card){var ov=card.querySelector('.siren-overlay');if(ov)ov.style.opacity='0';}
 
-// SALARY
-var salaryPos={right:20,bottom:148};
+// SALARY - 3 clicks then Mafi Fulus
+var salaryClicks=0,salaryMoving=false;
+var salaryOrigRight=20,salaryOrigBottom=222;
 function handleSalary(){
   if(salaryMoving)return;
   salaryClicks++;
   salaryMoving=true;
   var wrap=document.getElementById('salaryWrap');
   var maxX=window.innerWidth-80,maxY=window.innerHeight-80;
-  var newLeft=Math.floor(Math.random()*(maxX-80))+20;
-  var newTop=Math.floor(Math.random()*(maxY-100))+60;
+  var newLeft=Math.floor(Math.random()*(maxX-120))+30;
+  var newTop=Math.floor(Math.random()*(maxY-120))+60;
   wrap.style.transition='all .45s cubic-bezier(.36,.07,.19,.97)';
   wrap.style.right='auto';wrap.style.bottom='auto';
   wrap.style.left=newLeft+'px';wrap.style.top=newTop+'px';
   setTimeout(function(){
     salaryMoving=false;
-    if(salaryClicks>=5){
+    if(salaryClicks>=3){
       salaryClicks=0;
       document.getElementById('mafiModal').classList.remove('hidden');
       setTimeout(function(){
         document.getElementById('mafiModal').classList.add('hidden');
-        // Return to original position
-        wrap.style.transition='all .5s ease';
+        // Return to exact original position
+        wrap.style.transition='all .6s cubic-bezier(.22,.68,0,1.2)';
         wrap.style.left='auto';wrap.style.top='auto';
-        wrap.style.right=salaryPos.right+'px';wrap.style.bottom=salaryPos.bottom+'px';
+        wrap.style.right=salaryOrigRight+'px';wrap.style.bottom=salaryOrigBottom+'px';
       },5000);
     }
   },500);
