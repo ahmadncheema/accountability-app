@@ -1458,6 +1458,8 @@ async function loadCeoView(){
   // Auto expand all textareas in CEO view
   setTimeout(autoExpandAll, 100);
 }
+
+function buildTaskRowHTML(t){
   return '<div class="task-row">'+
     '<textarea class="task-input" readonly rows="1" style="resize:none;">'+escH(t.task)+'</textarea>'+
     '<select class="status-sel '+t.status+'" disabled>'+
