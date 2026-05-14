@@ -860,8 +860,17 @@ function clearSession(){sessionStorage.removeItem('aasr_sess_'+TAB_ID);}
 
 window.addEventListener('load',async function(){
   var s=sessionStorage.getItem('aasr_sess_'+TAB_ID);
-  if(s){showLoad('Restoring session...');var r=await sb.from('users').select('*').eq('username',s).single();if(r.data){CU=r.data;await bootApp();}else{hideLoad();}}
-  else{hideLoad();}
+  if(s){
+    showLoad('Restoring session...');
+    try{
+      // Set a 6 second timeout - if Supabase doesn't respond, show login
+      var timeout=new Promise(function(resolve){setTimeout(function(){resolve(null);},6000);});
+      var query=sb.from('users').select('*').eq('username',s).single();
+      var r=await Promise.race([query,timeout]);
+      if(r&&r.data){CU=r.data;await bootApp();}
+      else{hideLoad();}
+    }catch(e){hideLoad();}
+  }else{hideLoad();}
 });
 
 async function doLogin(){
@@ -869,14 +878,18 @@ async function doLogin(){
   var p=document.getElementById('loginPass').value;
   if(!u||!p){document.getElementById('loginErr').textContent='Please enter username and password.';return;}
   showLoad('Signing in...');
-  var r=await sb.from('users').select('*').eq('username',u).eq('password',p).single();
-  if(!r.data){hideLoad();document.getElementById('loginErr').textContent='Incorrect username or password.';return;}
-  CU=r.data;
-  document.getElementById('loginErr').textContent='';
-  document.getElementById('loginUser').value='';
-  document.getElementById('loginPass').value='';
-  saveSession(CU);
-  await bootApp();
+  try{
+    var timeout=new Promise(function(resolve){setTimeout(function(){resolve(null);},8000);});
+    var query=sb.from('users').select('*').eq('username',u).eq('password',p).single();
+    var r=await Promise.race([query,timeout]);
+    if(!r||!r.data){hideLoad();document.getElementById('loginErr').textContent='Incorrect username or password. Please try again.';return;}
+    CU=r.data;
+    document.getElementById('loginErr').textContent='';
+    document.getElementById('loginUser').value='';
+    document.getElementById('loginPass').value='';
+    saveSession(CU);
+    await bootApp();
+  }catch(e){hideLoad();document.getElementById('loginErr').textContent='Connection error. Please refresh and try again.';}
 }
 document.getElementById('loginPass').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 document.getElementById('loginUser').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
