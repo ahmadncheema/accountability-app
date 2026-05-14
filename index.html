@@ -275,7 +275,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .task-row{display:grid;grid-template-columns:1.8fr 130px 70px 70px 1fr 1fr 36px;gap:8px;padding:10px 20px;border-bottom:1px solid #f0f2f8;align-items:start;}
 .task-row:last-child{border-bottom:none;}
 .task-row:hover{background:#fafbff;}
-.task-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);resize:none;overflow:hidden;min-height:34px;height:34px;line-height:1.5;box-sizing:border-box;display:block;}
+.task-input{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;color:var(--text);background:var(--bg);resize:none;overflow:hidden;min-height:34px;line-height:1.5;box-sizing:border-box;display:block;}
 .task-input:focus{outline:none;border-color:var(--blue);background:var(--white);}
 .task-input[readonly]{background:#f5f7fc;color:var(--text);cursor:default;}
 .status-sel{width:100%;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;background:var(--bg);}
@@ -1146,8 +1146,9 @@ async function loadSheetForYearMonth(yr,mo){
   }
   renderSheet(yr,mo);
   updateStats();
-  // Auto expand all task textareas after sheet is rendered
-  setTimeout(autoExpandAll, 300);
+  startTaskObserver();
+  setTimeout(autoExpandAll,400);
+  setTimeout(autoExpandAll,1200);
 }
 
 // Override saveSheet to use selected month/year
@@ -1280,25 +1281,64 @@ function renderTasks(wkNum,dk){
       '<button class="btn-icon btn-rem-icon" onclick="remTask('+wkNum+',\''+dk+'\','+ti+')">&#8722;</button>';
     container.appendChild(row);
   });
-  // Use requestAnimationFrame to ensure DOM is painted before measuring heights
-  requestAnimationFrame(function(){
-    container.querySelectorAll('.task-input').forEach(function(ta){autoExpand(ta);});
-  });
+  // Expand after append using height:0 trick
+  setTimeout(function(){
+    container.querySelectorAll('textarea.task-input').forEach(function(ta){
+      autoExpand(ta);
+    });
+  },50);
 }
 
+// Auto expand textareas - reliable approach
 function autoExpand(el){
   if(!el||el.tagName!=='TEXTAREA')return;
-  el.style.height='34px';
-  var newHeight=el.scrollHeight;
-  if(newHeight>34)el.style.height=newHeight+'px';
+  // Temporarily shrink to get true scrollHeight
+  el.style.height='0px';
+  var h=el.scrollHeight;
+  el.style.height=(h<34?34:h)+'px';
 }
 
 function autoExpandAll(){
-  requestAnimationFrame(function(){
-    document.querySelectorAll('textarea.task-input').forEach(function(ta){
-      autoExpand(ta);
+  document.querySelectorAll('textarea.task-input').forEach(function(ta){
+    autoExpand(ta);
+  });
+}
+
+// Watch for new textareas added to the sheet and expand them immediately
+function startTaskObserver(){
+  var container=document.getElementById('weeksContainer');
+  if(!container)return;
+  var obs=new MutationObserver(function(mutations){
+    mutations.forEach(function(m){
+      m.addedNodes.forEach(function(node){
+        if(node.nodeType!==1)return;
+        if(node.tagName==='TEXTAREA'&&node.classList.contains('task-input')){
+          autoExpand(node);
+        }
+        node.querySelectorAll&&node.querySelectorAll('textarea.task-input').forEach(function(ta){
+          autoExpand(ta);
+        });
+      });
     });
   });
+  obs.observe(container,{childList:true,subtree:true});
+}
+
+// Also watch CEO sheet container
+function startCeoObserver(){
+  var container=document.getElementById('ceoSheetWrap');
+  if(!container)return;
+  var obs=new MutationObserver(function(mutations){
+    mutations.forEach(function(m){
+      m.addedNodes.forEach(function(node){
+        if(node.nodeType!==1)return;
+        node.querySelectorAll&&node.querySelectorAll('textarea.task-input').forEach(function(ta){
+          autoExpand(ta);
+        });
+      });
+    });
+  });
+  obs.observe(container,{childList:true,subtree:true});
 }
 
 function emptyTask(){return{task:'',status:'pending',target:'',actual:'',challenge:'',notes:''};}
@@ -1457,7 +1497,9 @@ async function loadCeoView(){
     wrap.appendChild(blk);
   });
   // Auto expand all textareas in CEO view
-  setTimeout(autoExpandAll, 300);
+  setTimeout(autoExpandAll,400);
+  setTimeout(autoExpandAll,1200);
+  startCeoObserver();
 }
 
 function buildTaskRowHTML(t){
