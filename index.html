@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <title>Accountability Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.getElementById('loadingOv').style.display='none';alert('Network error loading app. Please check your connection and refresh.');"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
@@ -858,19 +858,27 @@ var TAB_ID=(function(){
 function saveSession(u){sessionStorage.setItem('aasr_sess_'+TAB_ID,u.username);}
 function clearSession(){sessionStorage.removeItem('aasr_sess_'+TAB_ID);}
 
-window.addEventListener('load',async function(){
+window.addEventListener('load',function(){
+  // Always hide loading and show login immediately
+  hideLoad();
+  // Then check for existing session in background
   var s=sessionStorage.getItem('aasr_sess_'+TAB_ID);
   if(s){
     showLoad('Restoring session...');
-    try{
-      // Set a 6 second timeout - if Supabase doesn't respond, show login
-      var timeout=new Promise(function(resolve){setTimeout(function(){resolve(null);},6000);});
-      var query=sb.from('users').select('*').eq('username',s).single();
-      var r=await Promise.race([query,timeout]);
-      if(r&&r.data){CU=r.data;await bootApp();}
+    sb.from('users').select('*').eq('username',s).single()
+    .then(function(r){
+      if(r&&r.data){CU=r.data;bootApp();}
       else{hideLoad();}
-    }catch(e){hideLoad();}
-  }else{hideLoad();}
+    })
+    .catch(function(){hideLoad();});
+    // Safety fallback - if nothing happens in 5 seconds show login
+    setTimeout(function(){
+      if(document.getElementById('loginScreen').classList.contains('active')||
+         !document.getElementById('appScreen').classList.contains('active')){
+        hideLoad();
+      }
+    },5000);
+  }
 });
 
 async function doLogin(){
