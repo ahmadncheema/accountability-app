@@ -270,7 +270,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .day-name.tdy{color:var(--danger);}
 .day-add-btn{padding:5px 12px;border-radius:6px;background:var(--green-light);color:var(--green);border:1.5px solid var(--green);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;}
 .day-add-btn:hover{background:var(--green);color:#fff;}
-.task-col-hdr{display:grid;grid-template-columns:1fr 130px 80px 80px 1fr 1fr 36px;gap:8px;padding:8px 20px;background:#e8ecf8;border-bottom:2px solid var(--border);}
+.task-col-hdr{display:grid;grid-template-columns:1.8fr 130px 70px 70px 1fr 1fr 36px;gap:8px;padding:8px 20px;background:#e8ecf8;border-bottom:2px solid var(--border);}
 .task-col-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
 .task-row{display:grid;grid-template-columns:1.8fr 130px 70px 70px 1fr 1fr 36px;gap:8px;padding:10px 20px;border-bottom:1px solid #f0f2f8;align-items:start;}
 .task-row:last-child{border-bottom:none;}
@@ -473,7 +473,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="login-logo-wrap">
       <img src="images/logo_login_1.png" alt="Logo" onerror="this.style.display='none';document.getElementById('loginLogoFb').style.display='flex'"/>
       <div class="login-logo-fallback" id="loginLogoFb" style="display:none;">LOGO</div>
-      <div class="login-company">Ahmed Al Sheebani<br/><span>Real Estate LLC</span></div>
+      <div class="login-company">Ahmed Al Sheebani<br/><span>Real Estate &amp; Technical Services</span></div>
     </div>
     <div class="login-title">Accountability Tracker</div>
     <div class="login-sub">Sign in to access your monthly sheet</div>
@@ -521,7 +521,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div><div class="pending-banner-title" id="pendingBannerTitle"></div><div class="pending-banner-sub" id="pendingBannerSub"></div></div>
         <button class="pending-banner-close" onclick="this.parentElement.style.display='none'">&#10005;</button>
       </div>
-      <div class="dash-welcome"><h1>Welcome, <span id="dashName">-</span></h1><p>to the Accountability Tracker of Ahmed Al Sheebani Real Estate LLC</p></div>
+      <div class="dash-welcome"><h1>Welcome, <span id="dashName">-</span></h1><p>to the Accountability Tracker of Ahmed Al Sheebani Real Estate LLC | Ahmed Al Sheebani Technical Services LLC</p></div>
       <div class="quote-bar"><div><div class="quote-text" id="quoteText">Loading...</div><div class="quote-author" id="quoteAuthor"></div></div></div>
       <div class="dash-top-row">
         <div class="dash-card clock-card"><div class="card-label">Live Time</div><div class="clock-time"><span id="clockHM">00:00</span><span class="clock-secs" id="clockS">:00</span></div><div class="clock-date" id="clockDate">Loading...</div><div class="clock-badge">Dubai Time</div></div>
@@ -718,13 +718,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div class="salary-tip">Get Salary</div>
   <button class="salary-btn" id="salaryBtn" onclick="handleSalary()" title="Get Salary">
     <!--
-      UAE Dirham SVG from GitHub.
-      Upload the SVG file to: images/dirham.svg
+      UAE Dirham PNG from GitHub.
+      File location: images/dirham.png
       The CSS filter converts black to brown/gold color.
-      If you have not uploaded it yet, a fallback D symbol shows.
     -->
-    <img src="images/dirham.svg" alt="AED"
-      style="width:30px;height:26px;object-fit:contain;filter:invert(32%) sepia(72%) saturate(600%) hue-rotate(20deg) brightness(0.7);"
+    <img src="images/dirham.png" alt="AED"
+      style="width:28px;height:24px;object-fit:contain;filter:invert(32%) sepia(72%) saturate(600%) hue-rotate(20deg) brightness(0.7);"
       onerror="this.style.display='none';document.getElementById('dirhamFallback').style.display='flex'"/>
     <span id="dirhamFallback" style="display:none;font-size:20px;font-weight:900;color:#7a5200;font-family:Georgia,serif;">D</span>
   </button>
@@ -1126,6 +1125,8 @@ async function loadSheetForYearMonth(yr,mo){
   }
   renderSheet(yr,mo);
   updateStats();
+  // Auto expand all task textareas after sheet is rendered
+  setTimeout(autoExpandAll, 100);
 }
 
 // Override saveSheet to use selected month/year
@@ -1257,14 +1258,25 @@ function renderTasks(wkNum,dk){
       '<textarea class="task-input" placeholder="Notes..." rows="1" oninput="autoExpand(this);setTask('+wkNum+',\''+dk+'\','+ti+',\'notes\',this.value)">'+escH(t.notes)+'</textarea>'+
       '<button class="btn-icon btn-rem-icon" onclick="remTask('+wkNum+',\''+dk+'\','+ti+')">&#8722;</button>';
     container.appendChild(row);
-    // Auto-expand all textareas after render
-    row.querySelectorAll('.task-input').forEach(function(ta){autoExpand(ta);});
+  });
+  // Use requestAnimationFrame to ensure DOM is painted before measuring heights
+  requestAnimationFrame(function(){
+    container.querySelectorAll('.task-input').forEach(function(ta){autoExpand(ta);});
   });
 }
 
 function autoExpand(el){
   el.style.height='auto';
-  el.style.height=(el.scrollHeight)+'px';
+  el.style.height=el.scrollHeight+'px';
+}
+
+// Call autoExpand on ALL task textareas in the sheet (used after full render)
+function autoExpandAll(){
+  requestAnimationFrame(function(){
+    document.querySelectorAll('.task-input').forEach(function(ta){
+      if(ta.tagName==='TEXTAREA')autoExpand(ta);
+    });
+  });
 }
 
 function emptyTask(){return{task:'',status:'pending',target:'',actual:'',challenge:'',notes:''};}
@@ -1422,9 +1434,9 @@ async function loadCeoView(){
       '</div>';
     wrap.appendChild(blk);
   });
+  // Auto expand all textareas in CEO view
+  setTimeout(autoExpandAll, 100);
 }
-
-function buildTaskRowHTML(t){
   return '<div class="task-row">'+
     '<textarea class="task-input" readonly rows="1" style="resize:none;">'+escH(t.task)+'</textarea>'+
     '<select class="status-sel '+t.status+'" disabled>'+
@@ -1912,11 +1924,22 @@ var chatTimer=null;
 function showChatGPT(){
   var b=document.getElementById('chatgptBubble');
   if(b.classList.contains('show')){b.classList.remove('show');return;}
+  // Combine personal messages + all general messages into one pool for true cycling
   var targeted=CGPT.filter(function(r){return r.user===CU.username;});
   var general=CGPT.filter(function(r){return r.user==='all';});
-  var pool=targeted.length?targeted:general;
-  var msg=pool[Math.floor(Math.random()*pool.length)];
-  b.textContent=msg?msg.message:'...';b.classList.add('show');
+  // If user has personal messages, pool = personal + general (variety)
+  // If no personal messages, pool = general only
+  var pool=targeted.length?targeted.concat(general):general;
+  // Never show same message twice in a row
+  var last=b.dataset.lastIdx?parseInt(b.dataset.lastIdx):-1;
+  var idx;
+  if(pool.length>1){
+    do{idx=Math.floor(Math.random()*pool.length);}while(idx===last);
+  }else{idx=0;}
+  b.dataset.lastIdx=idx;
+  var msg=pool[idx];
+  b.textContent=msg?msg.message:'...';
+  b.classList.add('show');
   if(chatTimer)clearTimeout(chatTimer);
   chatTimer=setTimeout(function(){b.classList.remove('show');},4200);
 }
