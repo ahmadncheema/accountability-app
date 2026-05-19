@@ -1147,8 +1147,12 @@ async function loadSheetForYearMonth(yr,mo){
   renderSheet(yr,mo);
   updateStats();
   startTaskObserver();
-  setTimeout(autoExpandAll,400);
-  setTimeout(autoExpandAll,1200);
+  // Multiple attempts at increasing intervals to catch layout at different stages
+  // Grid columns must finish sizing before scrollHeight is accurate
+  setTimeout(autoExpandAll, 100);
+  setTimeout(autoExpandAll, 400);
+  setTimeout(autoExpandAll, 900);
+  setTimeout(autoExpandAll, 1800);
 }
 
 // Override saveSheet to use selected month/year
@@ -1289,39 +1293,63 @@ function renderTasks(wkNum,dk){
   },50);
 }
 
-// Auto expand textareas - reliable approach
 function autoExpand(el){
   if(!el||el.tagName!=='TEXTAREA')return;
-  // Temporarily shrink to get true scrollHeight
+  // Save scroll position to prevent page jump
+  var scrollY=window.scrollY;
   el.style.height='0px';
   var h=el.scrollHeight;
   el.style.height=(h<34?34:h)+'px';
+  window.scrollTo(0,scrollY);
 }
 
 function autoExpandAll(){
+  var scrollY=window.scrollY;
   document.querySelectorAll('textarea.task-input').forEach(function(ta){
-    autoExpand(ta);
+    ta.style.height='0px';
+    var h=ta.scrollHeight;
+    ta.style.height=(h<34?34:h)+'px';
   });
+  window.scrollTo(0,scrollY);
 }
 
-// Watch for new textareas added to the sheet and expand them immediately
+// Watch for new textareas AND layout changes
+var taskResizeObs=null;
 function startTaskObserver(){
   var container=document.getElementById('weeksContainer');
   if(!container)return;
-  var obs=new MutationObserver(function(mutations){
+
+  // MutationObserver - expand when new textareas are added
+  var mutObs=new MutationObserver(function(mutations){
+    var toExpand=[];
     mutations.forEach(function(m){
       m.addedNodes.forEach(function(node){
         if(node.nodeType!==1)return;
         if(node.tagName==='TEXTAREA'&&node.classList.contains('task-input')){
-          autoExpand(node);
+          toExpand.push(node);
         }
-        node.querySelectorAll&&node.querySelectorAll('textarea.task-input').forEach(function(ta){
-          autoExpand(ta);
-        });
+        if(node.querySelectorAll){
+          node.querySelectorAll('textarea.task-input').forEach(function(ta){toExpand.push(ta);});
+        }
       });
     });
+    if(toExpand.length){
+      // Small delay to let grid layout settle first
+      setTimeout(function(){toExpand.forEach(function(ta){autoExpand(ta);});},80);
+    }
   });
-  obs.observe(container,{childList:true,subtree:true});
+  mutObs.observe(container,{childList:true,subtree:true});
+
+  // ResizeObserver - expand whenever the container resizes (grid reflows)
+  if(window.ResizeObserver){
+    if(taskResizeObs)taskResizeObs.disconnect();
+    taskResizeObs=new ResizeObserver(function(){
+      container.querySelectorAll('textarea.task-input').forEach(function(ta){
+        autoExpand(ta);
+      });
+    });
+    taskResizeObs.observe(container);
+  }
 }
 
 // Also watch CEO sheet container
