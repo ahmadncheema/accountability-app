@@ -686,6 +686,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div class="admin-card-title">Export Reports</div>
         <div class="admin-export-bar">
           <select class="export-emp-select" id="exportEmpSel"><option value="all">All Employees</option></select>
+          <select class="sheet-sel" id="adminExportMonth">
+            <option value="0">January</option><option value="1">February</option>
+            <option value="2">March</option><option value="3">April</option>
+            <option value="4">May</option><option value="5">June</option>
+            <option value="6">July</option><option value="7">August</option>
+            <option value="8">September</option><option value="9">October</option>
+            <option value="10">November</option><option value="11">December</option>
+          </select>
+          <select class="sheet-sel" id="adminExportYear" style="width:90px;"></select>
           <button class="btn-export btn-excel" onclick="adminExportExcel()">Export Excel</button>
           <button class="btn-export btn-pdf" onclick="adminExportPDF()">Export PDF</button>
         </div>
@@ -1132,6 +1141,7 @@ async function loadSheetForSelected(){
 
 // Track which month/year is currently loaded in the sheet
 var currentSheetYear=null, currentSheetMonth=null;
+var ceoViewYear=null, ceoViewMonth=null;
 
 async function loadSheetForYearMonth(yr,mo){
   // CRITICAL: Cancel any pending auto-saves before switching months
@@ -1386,8 +1396,24 @@ function emptyTask(){return{task:'',status:'pending',target:'',actual:'',challen
 function setTask(wk,dk,ti,f,v){if(!sheetData.weeks[wk]||!sheetData.weeks[wk].days[dk])return;sheetData.weeks[wk].days[dk][ti][f]=v;if(f==='status')refreshWkStats(wk);scheduleSave();}
 function addTask(wk,dk){if(!sheetData.weeks[wk].days[dk])sheetData.weeks[wk].days[dk]=[];sheetData.weeks[wk].days[dk].push(emptyTask());renderTasks(wk,dk);refreshWkStats(wk);scheduleSave();}
 function remTask(wk,dk,ti){if(sheetData.weeks[wk].days[dk].length<=1){showToast('Minimum 1 task per day.');return;}sheetData.weeks[wk].days[dk].splice(ti,1);renderTasks(wk,dk);refreshWkStats(wk);scheduleSave();}
-function setWeekend(wk,val){sheetData.weeks[wk].weekend=val;var now=new Date();var allW=getWeeksInMonth(now.getFullYear(),now.getMonth());renderDays(wk,allW[wk-1]||[],sheetData.weeks[wk]);refreshWkStats(wk);scheduleSave();}
-function refreshWkStats(wk){var now=new Date();var week=(getWeeksInMonth(now.getFullYear(),now.getMonth())[wk-1])||[];var s=calcStats(wk,week,sheetData.weeks[wk]||{});var el=document.getElementById('wkSB_'+wk);if(el)el.innerHTML='<span class="wsb wsb-done">'+s.done+' Done</span><span class="wsb wsb-prog">'+s.prog+' In Progress</span><span class="wsb wsb-pend">'+s.pend+' Pending</span>';}
+function setWeekend(wk,val){
+  sheetData.weeks[wk].weekend=val;
+  // Use the currently loaded sheet month/year, NOT the system date
+  var yr=currentSheetYear!==null?currentSheetYear:new Date().getFullYear();
+  var mo=currentSheetMonth!==null?currentSheetMonth:new Date().getMonth();
+  var allW=getWeeksInMonth(yr,mo);
+  renderDays(wk,allW[wk-1]||[],sheetData.weeks[wk]);
+  refreshWkStats(wk);
+  scheduleSave();
+}
+function refreshWkStats(wk){
+  var yr=currentSheetYear!==null?currentSheetYear:new Date().getFullYear();
+  var mo=currentSheetMonth!==null?currentSheetMonth:new Date().getMonth();
+  var week=(getWeeksInMonth(yr,mo)[wk-1])||[];
+  var s=calcStats(wk,week,sheetData.weeks[wk]||{});
+  var el=document.getElementById('wkSB_'+wk);
+  if(el)el.innerHTML='<span class="wsb wsb-done">'+s.done+' Done</span><span class="wsb wsb-prog">'+s.prog+' In Progress</span><span class="wsb wsb-pend">'+s.pend+' Pending</span>';
+}
 
 function renderFooter(wkNum){
   var el=document.getElementById('wkFoot_'+wkNum);if(!el)return;
@@ -1437,7 +1463,11 @@ async function loadCeoView(){
   if(!uname){showToast('Please select an employee.');return;}
   showLoad('Loading employee sheet...');
   var uRes=await sb.from('users').select('*').eq('username',uname).single();
-  var now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
+  // Use currently selected month/year from sheet selectors
+  var yr=currentSheetYear!==null?currentSheetYear:new Date().getFullYear();
+  var mo=currentSheetMonth!==null?currentSheetMonth:new Date().getMonth();
+  // Track which month CEO is viewing
+  ceoViewYear=yr; ceoViewMonth=mo;
   var sRes=await sb.from('sheets').select('data').eq('username',uname).eq('year',yr).eq('month',mo).single();
   // Load CEO notes written by THIS CEO for this employee
   var cnRes=await sb.from('ceo_notes').select('*').eq('target_username',uname).eq('year',yr).eq('month',mo);
@@ -1559,8 +1589,10 @@ function buildTaskRowHTML(t){
 }
 
 async function saveCeoNote(targetU,wk,val){
-  var now=new Date();
-  await sb.from('ceo_notes').upsert({target_username:targetU,year:now.getFullYear(),month:now.getMonth(),week:wk,note:val,updated_at:new Date().toISOString()},{onConflict:'target_username,year,month,week'});
+  // Use the year/month currently being viewed in CEO panel
+  var yr=ceoViewYear!==null?ceoViewYear:new Date().getFullYear();
+  var mo=ceoViewMonth!==null?ceoViewMonth:new Date().getMonth();
+  await sb.from('ceo_notes').upsert({target_username:targetU,year:yr,month:mo,week:wk,note:val,updated_at:new Date().toISOString()},{onConflict:'target_username,year,month,week'});
   var si=document.getElementById('saveInd');si.classList.add('show');setTimeout(function(){si.classList.remove('show');},1800);
 }
 
@@ -1570,6 +1602,18 @@ async function loadAdminPanel(){
   var res=await sb.from('users').select('*').order('first_name');
   hideLoad();
   if(!res.data){showToast('Error loading users.');return;}
+  // Init export year selector
+  var adminYrSel=document.getElementById('adminExportYear');
+  if(adminYrSel&&!adminYrSel.options.length){
+    var now=new Date();
+    for(var y=2025;y<=now.getFullYear()+1;y++){
+      var o=document.createElement('option');
+      o.value=y;o.textContent=y;
+      adminYrSel.appendChild(o);
+    }
+    adminYrSel.value=now.getFullYear();
+    document.getElementById('adminExportMonth').value=now.getMonth();
+  }
   var tbody=document.getElementById('userTableBody');
   tbody.innerHTML='';
   res.data.forEach(function(u){
@@ -1689,7 +1733,11 @@ async function saveEditUser(){
 
 async function adminExportExcel(){
   var empSel=document.getElementById('exportEmpSel').value;
-  var now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
+  // Use sheet selectors if available, else current month
+  var selMo=document.getElementById('adminExportMonth');
+  var selYr=document.getElementById('adminExportYear');
+  var mo=selMo?parseInt(selMo.value):new Date().getMonth();
+  var yr=selYr?parseInt(selYr.value):new Date().getFullYear();
   showLoad('Preparing export...');
   var query=sb.from('sheets').select('username,data').eq('year',yr).eq('month',mo);
   if(empSel!=='all')query=query.eq('username',empSel);
@@ -1795,8 +1843,10 @@ async function exportPDF(){
 
 async function adminExportPDF(){
   var empSel=document.getElementById('exportEmpSel').value;
-  var mo=parseInt(document.getElementById('selMonth')?document.getElementById('selMonth').value:new Date().getMonth());
-  var yr=new Date().getFullYear();
+  var selMo=document.getElementById('adminExportMonth');
+  var selYr=document.getElementById('adminExportYear');
+  var mo=selMo?parseInt(selMo.value):new Date().getMonth();
+  var yr=selYr?parseInt(selYr.value):new Date().getFullYear();
   showLoad('Preparing PDF...');
   var query=sb.from('sheets').select('username,data').eq('year',yr).eq('month',mo);
   if(empSel!=='all')query=query.eq('username',empSel);
