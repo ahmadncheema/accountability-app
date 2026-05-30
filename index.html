@@ -1130,11 +1130,23 @@ async function loadSheetForSelected(){
   await loadSheetForYearMonth(yr,mo);
 }
 
+// Track which month/year is currently loaded in the sheet
+var currentSheetYear=null, currentSheetMonth=null;
+
 async function loadSheetForYearMonth(yr,mo){
+  // CRITICAL: Cancel any pending auto-saves before switching months
+  // This prevents saving empty data to the previous month
+  if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
+
   document.getElementById('sheetSub').textContent=CU.first_name+' '+CU.last_name+' - '+CU.title+' | '+MN[mo]+' '+yr;
   var res=await sb.from('sheets').select('data').eq('username',CU.username).eq('year',yr).eq('month',mo).single();
   sheetData=(res.data&&res.data.data)?res.data.data:{weeks:{}};
   if(!sheetData.weeks)sheetData.weeks={};
+
+  // Store which month is currently loaded
+  currentSheetYear=yr;
+  currentSheetMonth=mo;
+
   // Fetch CEO notes for this month
   var cnRes=await sb.from('ceo_notes').select('week,note').eq('target_username',CU.username).eq('year',yr).eq('month',mo);
   if(cnRes.data&&cnRes.data.length){
@@ -1147,27 +1159,28 @@ async function loadSheetForYearMonth(yr,mo){
   renderSheet(yr,mo);
   updateStats();
   startTaskObserver();
-  // Multiple attempts at increasing intervals to catch layout at different stages
-  // Grid columns must finish sizing before scrollHeight is accurate
-  setTimeout(autoExpandAll, 100);
-  setTimeout(autoExpandAll, 400);
-  setTimeout(autoExpandAll, 900);
-  setTimeout(autoExpandAll, 1800);
+  setTimeout(autoExpandAll,100);
+  setTimeout(autoExpandAll,400);
+  setTimeout(autoExpandAll,900);
+  setTimeout(autoExpandAll,1800);
 }
 
-// Override saveSheet to use selected month/year
+// Single saveSheet function - always saves to currently loaded month/year
 async function saveSheet(){
-  var mo=parseInt(document.getElementById('selMonth').value);
-  var yr=parseInt(document.getElementById('selYear').value);
-  await sb.from('sheets').upsert({username:CU.username,year:yr,month:mo,data:sheetData,updated_at:new Date().toISOString()},{onConflict:'username,year,month'});
-  var si=document.getElementById('saveInd');si.classList.add('show');setTimeout(function(){si.classList.remove('show');},1800);
-  updateStats();
-}
-
-async function saveSheet(){
-  var now=new Date(),yr=now.getFullYear(),mo=now.getMonth();
-  await sb.from('sheets').upsert({username:CU.username,year:yr,month:mo,data:sheetData,updated_at:new Date().toISOString()},{onConflict:'username,year,month'});
-  var si=document.getElementById('saveInd');si.classList.add('show');setTimeout(function(){si.classList.remove('show');},1800);
+  // Safety check: only save if we have a valid loaded month
+  if(currentSheetYear===null||currentSheetMonth===null)return;
+  // Safety check: don't save if sheetData is empty and we have no weeks
+  if(!sheetData||!sheetData.weeks||Object.keys(sheetData.weeks).length===0)return;
+  await sb.from('sheets').upsert({
+    username:CU.username,
+    year:currentSheetYear,
+    month:currentSheetMonth,
+    data:sheetData,
+    updated_at:new Date().toISOString()
+  },{onConflict:'username,year,month'});
+  var si=document.getElementById('saveInd');
+  si.classList.add('show');
+  setTimeout(function(){si.classList.remove('show');},1800);
   updateStats();
 }
 
